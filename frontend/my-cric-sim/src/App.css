@@ -1,42 +1,81 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+
+body{
+    display: flex;
+    justify-content: center;
+    background-color: darkgray;
+
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+
+.container{
+    border: 5px blue;
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.nav-bar{
+    background-color: rgb(52, 51, 51);
+    padding: 5px;
+    width: 100vh;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-evenly;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.nav-bar li{
+    list-style-type: none;
 }
 
-.card {
-  padding: 2em;
+.nav-bar a{
+    text-decoration: none;
+    color: white;
 }
 
-.read-the-docs {
-  color: #888;
+/* home page styles */
+
+.home-div{
+    background-color: rgb(52, 51, 51);
+    padding: 10px;
+    border-radius: 25px;
+    width:100%;
+
+    display:flex;
+    justify-content: center;
+    align-content: center;
+}
+
+
+
+
+.table-div{
+    background-color: rgb(52, 51, 51);
+    padding: 10px;
+    border-radius: 25px;
+    width:100%;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    align-content: center;   
+}
+
+.table-div table{
+    color: white;
+    border-spacing: 10px;
+}
+
+.table-head th{
+    background-color: rgb(72, 72, 72);
+    border-radius: 10px;
+    padding: 5px;
+    margin-inline: 10px;
+}
+
+.table-body td{
+    background-color: rgb(72, 72, 72);
+    border-radius: 10px;
+    padding: 5px;
+    padding-inline: 10px;
+    margin-inline: 10px;
 }

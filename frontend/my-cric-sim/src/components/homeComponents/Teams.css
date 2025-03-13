@@ -1,0 +1,28 @@
+.teams-div{
+    background-color: whitesmoke;
+    padding: 10px;
+    margin: 20px;
+    border-radius: 25px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.teams-list{
+    background-color: rgb(52, 51, 51);
+    padding: 10px;
+    margin: 20px;
+    border-radius: 25px;
+}
+
+.teams-list li{
+    list-style-type: none;
+    margin-bottom: 10px;
+    background-color: whitesmoke;
+    padding: 5px;
+    border-radius: 10px;
+    text-align: center;
+}
