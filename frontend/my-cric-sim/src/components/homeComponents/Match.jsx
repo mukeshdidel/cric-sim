@@ -10,17 +10,14 @@ export default function Match(){
     const id = useParams();
 
     const [teams, setTeams] = useState({team1Name: "", team2Name: "",team1Id: -1, team2Id: -1, matchId: -1});
-
     const [winningTeamId, setWinningTeamId] = useState(-1);
-
-    const [isMatchFinished,setIsMatchFinished] = useState(false);
-    const [isResultSubmitted, setIsResultSubmitted] = useState(false); 
-
+ 
     const [team1Players, setTeam1Players] = useState([]);
     const [team2Players, setTeam2Players] = useState([]);
-
     const [score , setScore] = useState({ totalRuns: 0, totalWickets: 0, totalBalls: 0, isFirstInning: true, target:99999});
 
+    const [isMatchFinished,setIsMatchFinished] = useState(false);
+    const [isResultSubmitted, setIsResultSubmitted] = useState(false);
 
     useEffect(() =>{
         async function fetchTeamData(){
@@ -49,10 +46,10 @@ export default function Match(){
 
 
     async function handleStartClick(){
+
         const [newTeam1Players,newTeam2Players,newScore] = await simInning
         (team1Players, team2Players,setTeam1Players, setTeam2Players,score , setScore);
         
-        newScore.target = newScore.totalRuns + 1;
 
         const [finalTeam2Players,finalTeam1Players,finalScore] = await simInning
         (newTeam2Players, newTeam1Players ,setTeam2Players, setTeam1Players,{...newScore,target: newScore.totalRuns + 1, isFirstInning:false,}, setScore);
@@ -93,8 +90,15 @@ export default function Match(){
                     <h2>{teams.team1Name} vs {teams.team2Name} </h2>
                 </div>
                 <div className='match-info'>
+                    <div className='button-div'>
+                        <button className="match-button" onClick={handleStartClick}>Start Match</button>                   
+                        {isResultSubmitted ? 
+                            <button className="match-button"><NavLink to='/'>Home</NavLink></button>
+                        :
+                            <button className="match-button" onClick={handleCompleteClick}>Complete</button>
+                        } 
+                    </div>
 
-                    <button className="match-button" onClick={handleStartClick}>Start Match</button>
                     <h3>Scorecard</h3>
                     <Score score={score}/>                    
                     <div className='match-scorecard'>
@@ -102,11 +106,7 @@ export default function Match(){
                     <ScoreCard teamPlayers={team2Players}/>
                     </div>
 
-                    {isResultSubmitted ? 
-                        <button className="match-button"><NavLink to='/'>Home</NavLink></button>
-                    :
-                        <button className="match-button" onClick={handleCompleteClick}>Complete</button>
-                    }
+
 
                 </div>
             </div>

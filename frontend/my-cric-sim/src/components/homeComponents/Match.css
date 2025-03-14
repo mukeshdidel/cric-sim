@@ -59,3 +59,38 @@
     flex-direction: column;
     align-items: center;
 }
+
+.scorecard-head th{
+    background-color: rgb(72, 72, 72);
+    border-radius: 10px;
+    padding: 5px;
+    margin-inline: 10px;
+    color:whitesmoke;
+}
+
+.scorecard-body td{
+    background-color: rgb(72, 72, 72);
+    border-radius: 10px;
+    padding: 5px;
+    margin-inline: 10px;
+    color:whitesmoke;
+}
+
+.match-button{
+    background-color: green;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    margin: 5px;
+    cursor: pointer;
+}
+
+.match-button:hover{
+    background-color: darkgreen;
+}
+
+.match-button a{
+    text-decoration: none;
+    color: white;
+}

@@ -14,23 +14,30 @@
 
     battingTeam = battingTeam.map(player => ({ ...player }));
     bowlingTeam = bowlingTeam.map(player => ({ ...player }));
+    console.log(battingTeam);
+    console.log(bowlingTeam);
     let newScore = score;
 
     battingTeam[s].batStatus = 1;
     battingTeam[ns].batStatus = 2;
 
 
-    for(let i =0 ; i<5;i++){
+    for(let i =0 ; i<20;i++){
 
         
         // randomly choosing bowler 
-        b = Math.floor(Math.random()*bowlingTeam.length);
+        b = selectBaller(bowlingTeam);
+        bowlingTeam[b]= {
+            ...bowlingTeam[b],
+            overs: bowlingTeam[b].overs + 1,
+        }
+
         
         for(let j = 0 ; j<6;j++){
 
             let x;
             do{
-                x = Math.floor(Math.random()*8);  // a random number for next ball event
+                x = BallEventCalculator(battingTeam[s],bowlingTeam[b])  // a random number for next ball event
                 if(x===5){ // 5 for wide
                     totalRuns++;
                 }   
@@ -93,7 +100,7 @@
                     
                 setScore(newScore);                            
                     
-                if(totalWickets === 4){              
+                if(totalWickets === 10){              
                     setScore(newScore);
                     setBattingTeamPlayers(battingTeam);
                     setbowlingTeamPlayers(bowlingTeam); 
@@ -122,4 +129,107 @@
     }
 
     return [battingTeam, bowlingTeam, newScore]
+}
+
+
+function selectBaller(bowlingTeam){
+    let bowlers = [];
+    for(let i = 0 ; i< bowlingTeam.length ; i++){
+        if(bowlingTeam[i].bowl_rat >= 60 && bowlingTeam[i].overs < 4 ){
+            bowlers.push(i);
+        }
+    }
+    let randomIndex = Math.floor(Math.random()*bowlers.length);
+    console.log(bowlers[randomIndex]);
+    return bowlers[randomIndex];
+}
+
+function BallEventCalculator(batsman,bowler){
+    let ballEvent = 0;
+    let batNumber = Math.floor(Math.random()*batsman.bat_rat)+1
+    let bowlNumber = Math.floor(Math.random()*bowler.bowl_rat)+1
+    let difference = batNumber - bowlNumber;
+
+    if(batsman.bat_style === 'attacker'){
+        if(difference < -50) {
+            ballEvent = 7
+        }
+        else if(difference < -20 && difference > -50) {
+        ballEvent= 0
+        }
+        else if(difference < 5 && difference > -5) {
+            ballEvent = 1;
+        }
+        else if(difference < 20 && difference > 5) {
+            ballEvent = 2;
+        }
+        else if(difference < 27 && difference > 20) {
+            ballEvent = 3;
+        }
+        else if(difference < 40 && difference > 27) {
+            ballEvent = 4;
+        }
+        else if(difference < 42 && difference > 40) {
+            ballEvent = 5;
+        }
+        else if(difference > 42) {
+            ballEvent = 6;
+        } 
+    }
+    else if(batsman.bat_style === 'defensive'){
+        if(difference < -40) {
+            ballEvent = 7
+        }
+        else if(difference < -15 && difference > -40) {
+            ballEvent= 0
+        }
+        else if(difference < 0 && difference > -15) {
+            ballEvent = 1;
+        }
+        else if(difference < 20 && difference > 0) {
+            ballEvent = 2;
+        }
+        else if(difference < 40 && difference > 20) {
+            ballEvent = 3;
+        }
+        else if(difference < 60 && difference > 40) {
+            ballEvent = 4;
+        }
+        else if(difference < 70 && difference > 60) {
+            ballEvent = 5;
+        }
+        else if(difference > 70) {
+            ballEvent = 6;
+        }
+    }else
+    {
+        if(difference < -60) {
+            ballEvent = 7
+        }
+        else if(difference < -25 && difference > -60) {
+        ballEvent= 0
+        }
+        else if(difference < 0 && difference > -25) {
+            ballEvent = 1;
+        }
+        else if(difference < 22 && difference > 0) {
+            ballEvent = 2;
+        }
+        else if(difference < 35 && difference > 22) {
+            ballEvent = 3;
+        }
+        else if(difference < 50 && difference > 35) {
+            ballEvent = 4;
+        }
+        else if(difference < 60 && difference > 50) {
+            ballEvent = 5;
+        }
+        else if(difference > 60) {
+            ballEvent = 6;
+        } 
+
+    }
+
+
+    return ballEvent;
 }
