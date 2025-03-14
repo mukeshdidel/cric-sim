@@ -30,6 +30,7 @@ export default function ScoreCard({teamPlayers}){
                         ))}
                     </tbody>
                 </table> 
+
             </div>
         </>
     );

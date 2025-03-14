@@ -11,7 +11,7 @@ const pool = mysql.createPool({
 
 async function getTable(){
     try {
-        const [teams] = await pool.query('select team_id, team_name, wins, losses, draws, points from teams natural join league_table;');
+        const [teams] = await pool.query('select team_id, team_name, wins, losses, draws, points from teams natural join league_table order by points desc;');
         return teams;
     } catch (error) {
         console.error(error);
@@ -104,4 +104,27 @@ async function getMatchPlayers(team_id){
     }
 }
 
-export {getTable,getPlayerStats,getTeams,insertMatches,exportMatches,truncateSchedule,exportMatch,getMatchPlayers};
+async function updateSchedule(match_id){
+    try{
+        await pool.query(`update schedule set isPlayed = 1 where match_id = ?`,[match_id]);
+    }
+    catch (error){
+        console.error(error);
+    }
+}
+
+async function updateLeaueTable(team_id, win,loss,draw,){
+    try{
+        await pool.query(`update league_table
+                          set wins = wins + ?,
+                          losses = losses + ?,
+                          draws = draws + ?
+                          where team_id = ?`,[win,loss,draw,team_id]);
+    }
+    catch (error){
+        console.error(error);
+    }
+}
+
+
+export {getTable,getPlayerStats,getTeams,insertMatches,exportMatches,truncateSchedule,exportMatch,getMatchPlayers,updateLeaueTable,updateSchedule};
