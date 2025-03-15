@@ -1,14 +1,29 @@
 use cric_sim;
 
-show tables;
-desc schedule;
-desc league_table;
+
+
+select * from teams;
 select * from league_table;
+select * from schedule;
 select * from players;
+select * from player_stat;
 
-update league_table set wins = 0,losses = 0, draws = 0;
+truncate player_stat;
+
+ALTER TABLE player_stat 
+ADD CONSTRAINT unique_player_season 
+UNIQUE (player_id, s_season);
+
+ALTER TABLE league_table  
+ADD CONSTRAINT unique_league_season  
+UNIQUE (team_id, season);
+
+select team_id, team_name,matches, wins, losses, draws, points from teams natural join league_table where season = 2 order by points desc ;
+
+
+update league_table set wins = 0,losses = 0, draws = 0, matches = 0;
 SET SQL_SAFE_UPDATES = 1;
-
+select * from  player_stat natural join players natural join teams;
 
 update players set team_id = 2 where player_id = 95;
 select * from players where team_id=3;

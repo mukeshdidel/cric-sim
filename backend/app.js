@@ -1,7 +1,7 @@
 
 import express from 'express';
 import cors from 'cors'
-import {getTable,getPlayerStats,getTeams,insertMatches,exportMatches,truncateSchedule,exportMatch,getMatchPlayers,updateLeaueTable,updateSchedule} from './database.js'
+import {getSeasons,getTable,getPlayerStats,getTeams,insertMatches,exportMatches,truncateSchedule,exportMatch,getMatchPlayers,updateLeaueTable,updateSchedule,updatePlayerStats,insertLeague} from './database.js'
 
 const app = express();
 
@@ -9,10 +9,22 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.get('/table',async function (req,res){
+app.get('/seasons', async function (req, res) {
     try {
-        const teams = await getTable();
-        res.json(teams);
+        const seasons = await getSeasons();
+        res.json(seasons);
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).send('Server Error');
+    }
+})
+
+app.post('/table',async function (req,res){
+    try {
+        const season = req.body;
+        const table = await getTable(season.season);
+        res.json(table);
     }
     catch (error) {
         console.error(error);
@@ -48,9 +60,15 @@ app.post('/matches',async function (req,res){
     try{
         const insertschedule  = req.body
         await truncateSchedule();
+        const seasons = await getSeasons();
+        const latestSeason = seasons[0].season + 1;
+        await insertLeague(latestSeason);
+
+
         for(let match of insertschedule){
-            const {team1, team2} = match;       
-            await insertMatches(team1,team2);
+            const {team1, team2} = match;   
+
+            await insertMatches(team1,team2,latestSeason);
         }
         const exportschedule = await exportMatches();
         res.json(exportschedule);
@@ -108,20 +126,31 @@ app.post('/result',async function (req,res){
         console.log(winningTeamId);
         console.log(teams);
 
+        // update schedule
         await updateSchedule(teams.matchId)
 
+        // update league table
         if(teams.team1Id === winningTeamId){
-        await updateLeaueTable(teams.team1Id,1,0,0)
-        await updateLeaueTable(teams.team2Id,0,1,0) 
+        await updateLeaueTable(teams.team1Id,1,0,0,teams.season)
+        await updateLeaueTable(teams.team2Id,0,1,0,teams.season) 
         }
         else if(teams.team2Id === winningTeamId){
-            await updateLeaueTable(teams.team2Id,1,0,0)
-            await updateLeaueTable(teams.team1Id,0,1,0)
+            await updateLeaueTable(teams.team2Id,1,0,0,teams.season)
+            await updateLeaueTable(teams.team1Id,0,1,0,teams.season)
         }
         else{
-            await updateLeaueTable(teams.team2Id,0,0,1)
-            await updateLeaueTable(teams.team1Id,0,0,1)
+            await updateLeaueTable(teams.team2Id,0,0,1,teams.season)
+            await updateLeaueTable(teams.team1Id,0,0,1,teams.season)
         }
+
+        // update player stats
+        for(let player of team1Players){
+            await updatePlayerStats(player.player_id,teams.season, player.runs, player.b_faced, player.six, player.four , player.wickets, player.b_bowled, player.r_conceded)
+        }
+        for(let player of team2Players){
+            await updatePlayerStats(player.player_id,teams.season, player.runs, player.b_faced, player.six, player.four , player.wickets, player.b_bowled, player.r_conceded)
+        }
+
 
 
     }
@@ -129,10 +158,9 @@ app.post('/result',async function (req,res){
         console.error(error);
         res.status(500).send('Server Error');
     }
-
-
-
 })
+
+
 
 app.use((err,req,res,next) => {
     console.error(err.stack)

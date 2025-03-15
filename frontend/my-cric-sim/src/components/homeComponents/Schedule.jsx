@@ -23,9 +23,7 @@ export default function Schedule(){
         const userChoice = confirm("Do you want to proceed?");
         if (userChoice) {
             const data = await getTeams_id();
-            console.log(data);
             const newSchedule = createSchedule(data);
-            console.log(newSchedule);
             const newSchedule2 = await insertSchedule(newSchedule);
             setMatches(newSchedule2);
         } else {

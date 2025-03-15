@@ -79,3 +79,17 @@ body{
     padding-inline: 10px;
     margin-inline: 10px;
 }
+
+.table-body td span{
+    color: grey;
+    font-size: 12px;
+}
+
+.table-head th:hover{
+    background-color: grey;
+    cursor: pointer;
+}
+
+.active-link{
+    border-bottom: 2px solid whitesmoke;
+}

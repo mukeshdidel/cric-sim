@@ -40,6 +40,11 @@
                 x = BallEventCalculator(battingTeam[s],bowlingTeam[b])  // a random number for next ball event
                 if(x===5){ // 5 for wide
                     totalRuns++;
+                    bowlingTeam[b] ={
+                        ...bowlingTeam[b],
+                        r_conceded : bowlingTeam[b].r_conceded + 1,
+                    }
+                    setbowlingTeamPlayers(bowlingTeam); 
                 }   
             }while(x===5);
 
@@ -56,6 +61,7 @@
                 bowlingTeam[b]= {
                     ...bowlingTeam[b],
                     b_bowled: bowlingTeam[b].b_bowled + 1,
+                    r_conceded : bowlingTeam[b].r_conceded + x
                 }
 
 

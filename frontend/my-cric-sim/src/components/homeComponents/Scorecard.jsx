@@ -14,6 +14,7 @@ export default function ScoreCard({teamPlayers}){
                             <th>four</th>
                             <th>wickets</th>
                             <th>b_bowled</th>
+                            <th>conceded</th>
                         </tr>
                     </thead>
                     <tbody className='scorecard-body'>
@@ -26,6 +27,7 @@ export default function ScoreCard({teamPlayers}){
                                 <td>{player.four}</td>
                                 <td>{player.wickets}</td>
                                 <td>{player.b_bowled}</td>
+                                <td>{player.r_conceded}</td>  
                             </tr>
                         ))}
                     </tbody>

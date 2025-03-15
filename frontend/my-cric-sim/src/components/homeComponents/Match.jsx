@@ -22,19 +22,19 @@ export default function Match(){
     useEffect(() =>{
         async function fetchTeamData(){
 
-            const newTeams = await getTeamsName(id);
+            const newTeams = await getTeams(id);
             
             setTeams({team1Name: newTeams[0].team1_name,
-                team2Name: newTeams[0].team2_name, team1Id: newTeams[0].team1_id, team2Id: newTeams[0].team2_id, matchId: newTeams[0].match_id});
+                team2Name: newTeams[0].team2_name, team1Id: newTeams[0].team1_id, team2Id: newTeams[0].team2_id, matchId: newTeams[0].match_id ,season: newTeams[0].season});
             
-            let [team1Players, team2Players] = await getTeamPlayers(newTeams[0].team1_id, newTeams[0].team2_id);
+            let [team1Players, team2Players] = await getTeamPlayers(newTeams[0].team1_id, newTeams[0].team2_id,newTeams[0].season);
 
             team1Players = team1Players.map(player => ({
-                ...player, runs: 0, b_faced: 0, six: 0, four: 0, wickets: 0, b_bowled: 0, batStatus: 0/*0 -> yet to bat, 1->striker, 2-> non-striker, 3-> out*/,overs : 0, bowlStatus: 0/* 0-> not bowling current over 1-> bowling current over   */
+                ...player, runs: 0, b_faced: 0, six: 0, four: 0, wickets: 0, b_bowled: 0, batStatus: 0/*0 -> yet to bat, 1->striker, 2-> non-striker, 3-> out*/,overs : 0, bowlStatus: 0/* 0-> not bowling current over 1-> bowling current over   */,r_conceded: 0
             }))
 
             team2Players = team2Players.map(player => ({
-                ...player, runs: 0, b_faced: 0, six: 0, four: 0, wickets: 0, b_bowled: 0,batStatus: 0,overs : 0, bowlStatus: 0
+                ...player, runs: 0, b_faced: 0, six: 0, four: 0, wickets: 0, b_bowled: 0,batStatus: 0,overs : 0, bowlStatus: 0,r_conceded: 0
             }))
 
             setTeam1Players(team1Players);
@@ -67,7 +67,7 @@ export default function Match(){
 
     }
 
-    async function handleCompleteClick(e){
+    async function handleCompleteClick(){
         if(!isMatchFinished) return;
         
         setIsResultSubmitted(true);
@@ -114,7 +114,7 @@ export default function Match(){
     );
 }
 
-async function getTeamsName(id) {
+async function getTeams(id) {
     try{
         console.log(id);
         const response = await fetch('http://localhost:5000/match', {
