@@ -4,16 +4,23 @@ import './Schedule.css'
 
 export default function Schedule(){
     const [matches ,setMatches] = useState([]);
+    const [isloading, setisLoading ] = useState(false);
+    const [IsError , setIsError] = useState(false);
     
     useEffect(() => {
         async function getMatches(){
+
             try {
+                setisLoading(true);
                 const response = await fetch('http://localhost:5000/initialmatches');
                 const data = await response.json();
                 setMatches(data);
                 console.log(data);
+                setisLoading(false);
             } catch (error) {
                 console.error('Error fetching matches:', error);
+                setIsError(true);
+                setisLoading(false);
             }
         }
         getMatches();
@@ -36,18 +43,18 @@ export default function Schedule(){
         <>
             <div className="schedule-div">
                 <h2>Schedule</h2>
+                {isloading && <h1>loading...</h1>}
+                {IsError && <h1>Error fetching matches</h1>} 
                 <button className="schedule-button" onClick={sched}>generate schedule</button>
                 <ul className='matches-list'>
                     {matches.map(match => (
                         <li key={match.match_id}>
                             <Link to={`/match/${match.match_id}`}>                            
-                                {match.team1_name} vs {match.team2_name}
+                            {match.team1_name} vs {match.team2_name}
                             </Link>
-
                         </li>
                     ))}
                 </ul>
-
             </div>
         </>
     );

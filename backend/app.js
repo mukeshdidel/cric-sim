@@ -24,6 +24,7 @@ app.post('/table',async function (req,res){
     try {
         const season = req.body;
         const table = await getTable(season.season);
+        console.log(table);
         res.json(table);
     }
     catch (error) {
@@ -95,13 +96,15 @@ app.post('/match',async function (req,res){
 app.get('/initialmatches',async function(req, res){
     try{
         const exportschedule = await exportMatches();
-        res.json(exportschedule);
+            res.json(exportschedule);
+        
     }
     catch (error){
         console.error(error);
         res.status(500).send('Server Error');
     }
 })
+
 
 app.use('/matchplayers/:id',async function(req, res){
     try{
@@ -127,20 +130,20 @@ app.post('/result',async function (req,res){
         console.log(teams);
 
         // update schedule
-        await updateSchedule(teams.matchId)
+        await updateSchedule(teams.matchId) // updates match to 'played' state  
 
         // update league table
         if(teams.team1Id === winningTeamId){
-        await updateLeaueTable(teams.team1Id,1,0,0,teams.season)
-        await updateLeaueTable(teams.team2Id,0,1,0,teams.season) 
+        await updateLeaueTable(teams.team1Id,1,0,0,teams.season,score.target-1,120,score.totalRuns,score.totalBalls)
+        await updateLeaueTable(teams.team2Id,0,1,0,teams.season,score.totalRuns,score.totalBalls,score.target-1,120) 
         }
         else if(teams.team2Id === winningTeamId){
-            await updateLeaueTable(teams.team2Id,1,0,0,teams.season)
-            await updateLeaueTable(teams.team1Id,0,1,0,teams.season)
+            await updateLeaueTable(teams.team2Id,1,0,0,teams.season,score.target-1,120,score.totalRuns,score.totalBalls)
+            await updateLeaueTable(teams.team1Id,0,1,0,teams.season,score.totalRuns,score.totalBalls,score.target-1,120)
         }
         else{
-            await updateLeaueTable(teams.team2Id,0,0,1,teams.season)
-            await updateLeaueTable(teams.team1Id,0,0,1,teams.season)
+            await updateLeaueTable(teams.team2Id,0,0,1,teams.season,score.target-1,120,score.totalRuns,score.totalBalls)
+            await updateLeaueTable(teams.team1Id,0,0,1,teams.season,score.totalRuns,score.totalBalls,score.target-1,120)
         }
 
         // update player stats

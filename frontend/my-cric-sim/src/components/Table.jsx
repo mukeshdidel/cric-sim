@@ -22,6 +22,7 @@ export default function Table(){
             }); 
             
             const teams = await response.json();
+
             console.log(teams);  // Teams fetched from server are logged to console for debugging.
             setTable(teams);
         }
@@ -40,6 +41,8 @@ export default function Table(){
             }); 
             
             const teams = await response.json();
+ 
+            console.log(teams);  // Teams fetched from server are logged to console for debugging.
             setTable(teams);
        }catch (error) {
             console.error('Error fetching teams:', error);
@@ -63,6 +66,7 @@ export default function Table(){
                             <th>Losses</th>
                             <th>Draws</th>
                             <th>Points</th>
+                            <th>NRR</th>
                         </tr>
                     </thead>
                     <tbody className='table-body'>
@@ -74,6 +78,7 @@ export default function Table(){
                                 <td>{team.losses}</td>
                                 <td>{team.draws}</td>
                                 <td>{team.points}</td>
+                                <td>{team.nrr}</td>
                             </tr>
                         ))}
                     </tbody>

@@ -4,6 +4,21 @@ use cric_sim;
 
 select * from teams;
 select * from league_table;
+
+alter table league_table drop runs_team, drop balls_team , drop runs_opp, drop balls_opp, drop nrr;
+ALTER TABLE league_table 
+ADD COLUMN runs_team INT default 0, 
+ADD COLUMN balls_team INT default 0 , 
+ADD COLUMN runs_opp INT default 0, 
+ADD COLUMN balls_opp INT default 0, 
+ADD COLUMN nrr DECIMAL(7,3) AS (
+    CASE 
+        WHEN balls_team = 0 OR balls_opp = 0 THEN 0 
+        ELSE ((runs_team / NULLIF(balls_team, 0) * 6) - (runs_opp / NULLIF(balls_opp, 0) * 6)) 
+    END
+);
+
+DESC league_table;
 select * from schedule;
 select * from players;
 select * from player_stat;
@@ -20,7 +35,7 @@ UNIQUE (team_id, season);
 
 select team_id, team_name,matches, wins, losses, draws, points from teams natural join league_table where season = 2 order by points desc ;
 
-
+delete from league_table where season = 1;
 update league_table set wins = 0,losses = 0, draws = 0, matches = 0;
 SET SQL_SAFE_UPDATES = 1;
 select * from  player_stat natural join players natural join teams;

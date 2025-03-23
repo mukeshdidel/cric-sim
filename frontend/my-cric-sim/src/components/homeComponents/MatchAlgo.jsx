@@ -34,6 +34,10 @@
 
         
         for(let j = 0 ; j<6;j++){
+            battingTeam[s].batStatus = 1;
+            battingTeam[ns].batStatus = 2;
+            setBattingTeamPlayers(battingTeam);
+            
 
             let x;
             do{
@@ -107,7 +111,7 @@
                 setScore(newScore);                            
                     
                 if(totalWickets === 10){              
-                    setScore(newScore);
+                    setScore(newScore);               
                     setBattingTeamPlayers(battingTeam);
                     setbowlingTeamPlayers(bowlingTeam); 
                     return [battingTeam, bowlingTeam, newScore] ;   // End innings if 4 wickets fall

@@ -18,8 +18,8 @@ async function getSeasons(){
 }
 async function getTable(season){
     try {
-        const [teams] = await pool.query(`select team_id, team_name,matches, wins, losses, draws, points from teams natural join league_table where season = ? 
-        order by points desc ;`,[season]);
+        const [teams] = await pool.query(`select team_id, team_name,matches, wins, losses, draws, points, nrr from teams natural join league_table where season = ? 
+        order by points desc, nrr desc ;`,[season]);
         return teams;
     } catch (error) {
         console.error(error);
@@ -142,14 +142,18 @@ async function updateSchedule(match_id){
     }
 }
 
-async function updateLeaueTable(team_id, win,loss,draw,season){
+async function updateLeaueTable(team_id, win,loss,draw,season,runs_team, balls_team, runs_opp, balls_opp){
     try{
         await pool.query(`update league_table
                           set matches = matches + 1,
                           wins = wins + ?,
                           losses = losses + ?,
-                          draws = draws + ?
-                          where team_id = ? and season = ?`,[win,loss,draw,team_id,season]);
+                          draws = draws + ?,
+                          runs_team = runs_team + ?,
+                          balls_team = balls_team + ?,
+                          runs_opp = runs_opp + ?,
+                          balls_opp = balls_opp + ?
+                          where team_id = ? and season = ?`,[win,loss,draw,runs_team, balls_team, runs_opp, balls_opp,team_id,season]);
     }
     catch (error){
         console.error(error);

@@ -1,6 +1,8 @@
 
 
 export default function ScoreCard({teamPlayers}){
+    const onStrike = '🏏*';
+    const nonStrike = '🏏'; 
     return (
         <>
             <div className='team-scorecard'>            
@@ -20,7 +22,7 @@ export default function ScoreCard({teamPlayers}){
                     <tbody className='scorecard-body'>
                         {teamPlayers.map(player => (
                             <tr key={player.player_id}>
-                                <td>{player.player_name}</td>
+                                <td>{player.player_name} {player.batStatus===1 && onStrike }{player.batStatus===2 && nonStrike }</td>
                                 <td>{player.runs}</td>
                                 <td>{player.b_faced}</td>
                                 <td>{player.six}</td>

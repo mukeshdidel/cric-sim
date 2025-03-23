@@ -50,6 +50,7 @@ export default function Match(){
         const [newTeam1Players,newTeam2Players,newScore] = await simInning
         (team1Players, team2Players,setTeam1Players, setTeam2Players,score , setScore);
         
+        
 
         const [finalTeam2Players,finalTeam1Players,finalScore] = await simInning
         (newTeam2Players, newTeam1Players ,setTeam2Players, setTeam1Players,{...newScore,target: newScore.totalRuns + 1, isFirstInning:false,}, setScore);
@@ -79,7 +80,6 @@ export default function Match(){
             teams: teams
         }
         await postResult(data);
-        
         
     }
 
