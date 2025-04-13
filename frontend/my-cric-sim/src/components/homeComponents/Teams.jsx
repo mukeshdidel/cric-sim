@@ -11,7 +11,7 @@ export default function Teams(){
                 const response = await fetch('http://localhost:5000/teams');
                 const data = await response.json();
                 setTeams(data);
-                console.log(data);
+
             } catch (error) {
                 console.error('Error fetching teams:', error);
             }

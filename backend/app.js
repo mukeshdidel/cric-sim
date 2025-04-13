@@ -24,7 +24,7 @@ app.post('/table',async function (req,res){
     try {
         const season = req.body;
         const table = await getTable(season.season);
-        console.log(table);
+        /* console.log(table); */
         res.json(table);
     }
     catch (error) {
@@ -33,9 +33,10 @@ app.post('/table',async function (req,res){
     }
 })
 
-app.get('/stats',async function(req,res){
+app.post('/stats',async function(req,res){
     try{
-        const stats = await getPlayerStats();
+        const season = req.body;
+        const stats = await getPlayerStats(season.season);
         res.json(stats);
     }
     catch (error){
@@ -123,39 +124,48 @@ app.post('/result',async function (req,res){
         const data = req.body
         const {team1Players, team2Players, score,winningTeamId, teams} = data;
 
-        console.log(team1Players);
-        console.log(team2Players);
-        console.log(score);
-        console.log(winningTeamId);
-        console.log(teams);
 
-        // update schedule
+/*         console.log(team1Players)
+        console.log(team2Players)
+        console.log(score)
+        console.log(winningTeamId)
+        console.log(teams) */
+
         await updateSchedule(teams.matchId) // updates match to 'played' state  
 
-        // update league table
+
+
         if(teams.team1Id === winningTeamId){
-        await updateLeaueTable(teams.team1Id,1,0,0,teams.season,score.target-1,120,score.totalRuns,score.totalBalls)
-        await updateLeaueTable(teams.team2Id,0,1,0,teams.season,score.totalRuns,score.totalBalls,score.target-1,120) 
+            await updateLeaueTable(teams.team1Id,1,0,0,teams.season,score.team1TotalRuns,score.team1TotalBalls,score.totalRuns,score.totalBalls)
+            await updateLeaueTable(teams.team2Id,0,1,0,teams.season,score.totalRuns,score.totalBalls,score.team1TotalRuns,score.team1TotalBalls) 
         }
         else if(teams.team2Id === winningTeamId){
-            await updateLeaueTable(teams.team2Id,1,0,0,teams.season,score.target-1,120,score.totalRuns,score.totalBalls)
-            await updateLeaueTable(teams.team1Id,0,1,0,teams.season,score.totalRuns,score.totalBalls,score.target-1,120)
+            await updateLeaueTable(teams.team1Id,0,1,0,teams.season,score.team1TotalRuns,score.team1TotalBalls,score.totalRuns,score.totalBalls)
+            await updateLeaueTable(teams.team2Id,1,0,0,teams.season,score.totalRuns,score.totalBalls,score.team1TotalRuns,score.team1TotalBalls)
         }
         else{
-            await updateLeaueTable(teams.team2Id,0,0,1,teams.season,score.target-1,120,score.totalRuns,score.totalBalls)
-            await updateLeaueTable(teams.team1Id,0,0,1,teams.season,score.totalRuns,score.totalBalls,score.target-1,120)
+            await updateLeaueTable(teams.team1Id,0,0,1,teams.season,score.team1TotalRuns,score.team1TotalBalls,score.totalRuns,score.totalBalls)
+            await updateLeaueTable(teams.team2Id,0,0,1,teams.season,score.totalRuns,score.totalBalls,score.team1TotalRuns,score.team1TotalBalls)
         }
 
-        // update player stats
-        for(let player of team1Players){
-            await updatePlayerStats(player.player_id,teams.season, player.runs, player.b_faced, player.six, player.four , player.wickets, player.b_bowled, player.r_conceded)
+        for (let player of team1Players) {
+            await updatePlayerStats(
+                player.player_id, teams.season, player.team_id, 
+                player.runs, player.balls_f, player.sixes, player.fours, player.ones, player.twos, player.threes, player.dots, 
+                player.runs_c, player.balls_b, player.sixes_c, player.fours_c, player.ones_c, player.twos_c, player.threes_c, player.dots_b, player.extras, player.wickets
+            ); 
         }
-        for(let player of team2Players){
-            await updatePlayerStats(player.player_id,teams.season, player.runs, player.b_faced, player.six, player.four , player.wickets, player.b_bowled, player.r_conceded)
+
+
+        for (let player of team2Players) {
+            await updatePlayerStats(
+                player.player_id, teams.season, player.team_id, 
+                player.runs, player.balls_f, player.sixes, player.fours, player.ones, player.twos, player.threes, player.dots, 
+                player.runs_c, player.balls_b, player.sixes_c, player.fours_c, player.ones_c, player.twos_c, player.threes_c, player.dots_b, player.extras, player.wickets
+            ); 
         }
 
-
-
+        res.status(200).json({ message: 'Match result processed successfully' });
     }
     catch (error){
         console.error(error);

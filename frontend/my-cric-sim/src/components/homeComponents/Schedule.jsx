@@ -15,7 +15,6 @@ export default function Schedule(){
                 const response = await fetch('http://localhost:5000/initialmatches');
                 const data = await response.json();
                 setMatches(data);
-                console.log(data);
                 setisLoading(false);
             } catch (error) {
                 console.error('Error fetching matches:', error);
@@ -108,7 +107,6 @@ async function insertSchedule(schedule){
                 body: JSON.stringify(schedule)
             });
             const data = await response.json();
-            console.log(data);
             return data;
         
     }

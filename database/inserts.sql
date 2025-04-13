@@ -23,6 +23,8 @@ select * from schedule;
 select * from players;
 select * from player_stat;
 
+
+
 truncate player_stat;
 
 ALTER TABLE player_stat 
@@ -35,7 +37,8 @@ UNIQUE (team_id, season);
 
 select team_id, team_name,matches, wins, losses, draws, points from teams natural join league_table where season = 2 order by points desc ;
 
-delete from league_table where season = 1;
+delete from league_table where season = 2;
+delete from player_stat where s_season = 2;
 update league_table set wins = 0,losses = 0, draws = 0, matches = 0;
 SET SQL_SAFE_UPDATES = 1;
 select * from  player_stat natural join players natural join teams;

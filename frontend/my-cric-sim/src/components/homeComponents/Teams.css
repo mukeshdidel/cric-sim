@@ -1,5 +1,7 @@
 .teams-div{
-    background-color: whitesmoke;
+    background-color: rgb(52, 51, 51);
+    color: whitesmoke;
+
     padding: 10px;
     margin: 20px;
     border-radius: 25px;
@@ -12,7 +14,6 @@
 
 
 .teams-list{
-    background-color: rgb(52, 51, 51);
     padding: 10px;
     margin: 20px;
     border-radius: 25px;
@@ -22,7 +23,13 @@
     list-style-type: none;
     margin-bottom: 10px;
     background-color: whitesmoke;
+    color: rgb(52, 51, 51);
     padding: 5px;
     border-radius: 10px;
     text-align: center;
+}
+
+.teams-list li:hover{
+    background-color: aqua;
+    cursor: pointer;
 }

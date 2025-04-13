@@ -4,13 +4,12 @@ export default function Table(){
 
     const [table, setTable] = useState([]);
     const  [AllSeasons, setAllSeasons] = useState([]);
-    const [season, setSeason] = useState();
 
     useEffect(() => {
             async function getTable() {
             const newSeason = await fetch(`http://localhost:5000/seasons`);
             const seasons = await newSeason.json();
-            console.log(seasons[0].season);
+            /* console.log(seasons[0].season); */
             setAllSeasons(seasons);
 
             const response = await fetch('http://localhost:5000/table', {
@@ -23,7 +22,7 @@ export default function Table(){
             
             const teams = await response.json();
 
-            console.log(teams);  // Teams fetched from server are logged to console for debugging.
+            /* console.log(teams); */  // Teams fetched from server are logged to console for debugging.
             setTable(teams);
         }
         getTable();
@@ -42,7 +41,7 @@ export default function Table(){
             
             const teams = await response.json();
  
-            console.log(teams);  // Teams fetched from server are logged to console for debugging.
+            /* console.log(teams); */  // Teams fetched from server are logged to console for debugging.
             setTable(teams);
        }catch (error) {
             console.error('Error fetching teams:', error);

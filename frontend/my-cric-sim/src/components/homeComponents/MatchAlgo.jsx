@@ -1,32 +1,52 @@
 
 
 
- export default async function simInning(battingTeam,bowlingTeam,setBattingTeamPlayers,setbowlingTeamPlayers, score , setScore) {
+ export default async function SimInning(battingTeam,bowlingTeam,setBattingTeamPlayers,setbowlingTeamPlayers, score , setScore, matchSpeedRef) {
+
+
+    
 
     let s = 0; // striker's index
     let ns = 1; // non strikers's index
     let np = 2; // next player's index
-    let b = 0; // bowler's index
+    let b = -1; // bowler's index
     let totalRuns = 0;
     let totalWickets = 0;
     let totalBalls = 1;
 
 
+
     battingTeam = battingTeam.map(player => ({ ...player }));
     bowlingTeam = bowlingTeam.map(player => ({ ...player }));
-    console.log(battingTeam);
-    console.log(bowlingTeam);
-    let newScore = score;
-
+ 
     battingTeam[s].batStatus = 1;
     battingTeam[ns].batStatus = 2;
 
+    let newScore = {
+        ...score,
+        batsMan1: battingTeam[s],
+        batsMan2: battingTeam[ns],
+        bowler: bowlingTeam[b],
+        batsMan1Runs: 0,
+        batsMan2Runs: 0
+    };
+
+    let noOfbowlers = 0;
+
+    for (let i = 0 ; i < bowlingTeam.length; i++ ){
+        if(bowlingTeam[i].bowl_rating>=60){
+            noOfbowlers++;
+        }
+    }
+
+    const sleep = async () => {
+        let speed = matchSpeedRef.current; 
+        await new Promise(resolve => setTimeout(resolve, speed*100)); 
+    };
+
 
     for(let i =0 ; i<20;i++){
-
-        
-        // randomly choosing bowler 
-        b = selectBaller(bowlingTeam);
+        b = selectBaller(bowlingTeam , b, i, noOfbowlers); 
         bowlingTeam[b]= {
             ...bowlingTeam[b],
             overs: bowlingTeam[b].overs + 1,
@@ -34,6 +54,7 @@
 
         
         for(let j = 0 ; j<6;j++){
+
             battingTeam[s].batStatus = 1;
             battingTeam[ns].batStatus = 2;
             setBattingTeamPlayers(battingTeam);
@@ -46,7 +67,8 @@
                     totalRuns++;
                     bowlingTeam[b] ={
                         ...bowlingTeam[b],
-                        r_conceded : bowlingTeam[b].r_conceded + 1,
+                        runs_c : bowlingTeam[b].runs_c + 1,
+                        extras : bowlingTeam[b].extras + 1
                     }
                     setbowlingTeamPlayers(bowlingTeam); 
                 }   
@@ -58,14 +80,25 @@
                 battingTeam[s]= {
                     ...battingTeam[s],
                     runs: battingTeam[s].runs + x,
-                    b_faced: battingTeam[s].b_faced + 1,
-                    six: x === 6 ? battingTeam[s].six + 1 : battingTeam[s].six,
-                    four: x === 4 ? battingTeam[s].four + 1 : battingTeam[s].four,
+                    balls_f: battingTeam[s].balls_f + 1,
+                    sixes: x === 6 ? battingTeam[s].sixes + 1 : battingTeam[s].sixes,
+                    fours: x === 4 ? battingTeam[s].fours + 1 : battingTeam[s].fours,
+                    ones: x === 1 ? battingTeam[s].ones + 1 : battingTeam[s].ones,
+                    twos: x === 2 ? battingTeam[s].twos + 1 : battingTeam[s].twos,
+                    threes: x === 3 ? battingTeam[s].threes + 1 : battingTeam[s].threes,
+                    dots: x === 0 ? battingTeam[s].dots + 1 : battingTeam[s].dots,
                 }
                 bowlingTeam[b]= {
                     ...bowlingTeam[b],
-                    b_bowled: bowlingTeam[b].b_bowled + 1,
-                    r_conceded : bowlingTeam[b].r_conceded + x
+                    balls_b: bowlingTeam[b].balls_b+ 1,
+                    runs_c : bowlingTeam[b].runs_c + x,
+                    sixes_c: x === 6 ? bowlingTeam[b].sixes_c + 1 : bowlingTeam[b].sixes_c,
+                    fours_c: x === 4 ? bowlingTeam[b].fours_c + 1 : bowlingTeam[b].fours_c,
+                    ones_c: x === 1 ? bowlingTeam[b].ones_c + 1 : bowlingTeam[b].ones_c,
+                    twos_c: x === 2 ? bowlingTeam[b].twos_c + 1 : bowlingTeam[b].twos_c,
+                    threes_c: x === 3 ? bowlingTeam[b].threes_c + 1 : bowlingTeam[b].threes_c,
+                    dots_b: x === 0 ? bowlingTeam[b].dots_b + 1 : bowlingTeam[b].dots_b,
+
                 }
 
 
@@ -73,12 +106,15 @@
                     [s,ns] = [ns,s]
                 }
 
-                if(totalRuns>= newScore.target){
+                if(score.isFirstInning === false && totalRuns>= newScore.target){
                     newScore = {
                         ...newScore,
                         totalRuns: totalRuns,
                         totalWickets: totalWickets,
-                        totalBalls: totalBalls 
+                        totalBalls: totalBalls,
+                        batsMan1: battingTeam[s],
+                        batsMan2: battingTeam[ns],
+                        bowler: bowlingTeam[b]
                     }
                     setScore(newScore);
                     setBattingTeamPlayers(battingTeam);
@@ -89,13 +125,13 @@
             else if(x===7){
                 battingTeam[s] = { 
                     ...battingTeam[s],
-                    b_faced: battingTeam[s].b_faced + 1,
+                    balls_f: battingTeam[s].balls_f + 1,
                     batStatus: 3 
                 };
                 
                 bowlingTeam[b]= {
                     ...bowlingTeam[b],
-                    b_bowled: bowlingTeam[b].b_bowled + 1,
+                    balls_b: bowlingTeam[b].balls_b + 1,
                     wickets: bowlingTeam[b].wickets + 1
                 }
                 
@@ -105,7 +141,10 @@
                     ...newScore,
                     totalRuns: totalRuns,
                     totalWickets: totalWickets,
-                    totalBalls: totalBalls
+                    totalBalls: totalBalls,
+                    batsMan1: battingTeam[s],
+                    batsMan2: battingTeam[ns],
+                    bowler: bowlingTeam[b]
                 }
                     
                 setScore(newScore);                            
@@ -129,11 +168,13 @@
                 ...newScore,
                 totalBalls: totalBalls,
                 totalRuns: totalRuns,
-                totalWickets: totalWickets
+                totalWickets: totalWickets,
+                batsMan1: battingTeam[s],
+                batsMan2: battingTeam[ns],
+                bowler: bowlingTeam[b]
             }
-            setScore(newScore);
-
-            await new Promise(resolve => setTimeout(resolve, 100));
+            setScore(newScore); 
+            await sleep();
         }
 
     }
@@ -142,104 +183,98 @@
 }
 
 
-function selectBaller(bowlingTeam){
+function selectBaller(bowlingTeam, prevBowler, oversDone, noOfbowlers){
     let bowlers = [];
+
+
     for(let i = 0 ; i< bowlingTeam.length ; i++){
-        if(bowlingTeam[i].bowl_rat >= 60 && bowlingTeam[i].overs < 4 ){
+
+        if(noOfbowlers === 5 && (4-bowlingTeam[i].overs) > (20 - oversDone)/2 && i!=prevBowler && bowlingTeam[i].overs < 4 && bowlingTeam[i].bowl_rating >= 60 ){
+            bowlers = [];
+            bowlers.push(i);
+            break;
+        }
+
+        if(bowlingTeam[i].bowl_rating >= 60 && bowlingTeam[i].overs < 4 && i!= prevBowler){
             bowlers.push(i);
         }
-    }
+    }   
+   
+
+
+
     let randomIndex = Math.floor(Math.random()*bowlers.length);
-    console.log(bowlers[randomIndex]);
     return bowlers[randomIndex];
 }
 
 function BallEventCalculator(batsman,bowler){
-    let ballEvent = 0;
-    let batNumber = Math.floor(Math.random()*batsman.bat_rat)+1
-    let bowlNumber = Math.floor(Math.random()*bowler.bowl_rat)+1
-    let difference = batNumber - bowlNumber;
+    const ratingDiff = batsman.bat_rating - bowler.bowl_rating
 
-    if(batsman.bat_style === 'attacker'){
-        if(difference < -50) {
-            ballEvent = 7
+
+
+    let outcomes = [
+        {result: 0 , weight: 35},
+        {result: 1 , weight: 23},
+        {result: 2 , weight: 12},
+        {result: 3 , weight: 1},
+        {result: 4 , weight: 13},
+        {result: 5 , weight: 5}, // wide 
+        {result: 6 , weight: 8},
+        {result: 7 , weight: 5}, // out
+    ];
+
+    outcomes = outcomes.map(outcome => {
+        let newWeight = outcome.weight;
+
+        if(ratingDiff > 0){
+            if(outcome.result === 7)
+                newWeight -= Math.sqrt(ratingDiff)*0.8;
+            if(outcome.result === 4 || outcomes.result===6)
+                newWeight += Math.sqrt(ratingDiff)*1.2;
         }
-        else if(difference < -20 && difference > -50) {
-        ballEvent= 0
+        else{
+            if(outcome.result === 4 || outcome.result===6)
+                newWeight -= Math.sqrt(-ratingDiff)*1.5;
         }
-        else if(difference < 5 && difference > -5) {
-            ballEvent = 1;
+    
+        switch (batsman.bat_style) {
+            case "aggressive":
+                if (outcome.result === 7) newWeight += 3;
+                if (outcome.result === 4) newWeight += 2;
+                if (outcome.result === 6) newWeight += 4;
+                if (outcome.result === 1) newWeight -= 5;
+                if (outcome.result === 2) newWeight -= 2;
+                break;
+      
+            case "defensive":
+                if (outcome.result === 7) newWeight -= 2;
+                if (outcome.result === 6 ) newWeight -= 4;
+                if (outcome.result === 4) newWeight -= 6;
+                if (outcome.result === 1) newWeight += 4;
+                if (outcome.result === 2) newWeight += 3;
+                break;
         }
-        else if(difference < 20 && difference > 5) {
-            ballEvent = 2;
-        }
-        else if(difference < 27 && difference > 20) {
-            ballEvent = 3;
-        }
-        else if(difference < 40 && difference > 27) {
-            ballEvent = 4;
-        }
-        else if(difference < 42 && difference > 40) {
-            ballEvent = 5;
-        }
-        else if(difference > 42) {
-            ballEvent = 6;
-        } 
+
+        if(newWeight < 0)
+            newWeight = 0;
+
+        return {...outcome, weight: newWeight}
+
+    });
+
+    let totalWeight = 0;
+    
+    outcomes.forEach(outcome => {
+        totalWeight += outcome.weight;
+    });
+
+    const random = Math.random()*totalWeight;
+
+    let event = 0;
+
+    for(let outcome of outcomes){
+        event += outcome.weight;
+        if(random<= event)
+            return outcome.result;
     }
-    else if(batsman.bat_style === 'defensive'){
-        if(difference < -40) {
-            ballEvent = 7
-        }
-        else if(difference < -15 && difference > -40) {
-            ballEvent= 0
-        }
-        else if(difference < 0 && difference > -15) {
-            ballEvent = 1;
-        }
-        else if(difference < 20 && difference > 0) {
-            ballEvent = 2;
-        }
-        else if(difference < 40 && difference > 20) {
-            ballEvent = 3;
-        }
-        else if(difference < 60 && difference > 40) {
-            ballEvent = 4;
-        }
-        else if(difference < 70 && difference > 60) {
-            ballEvent = 5;
-        }
-        else if(difference > 70) {
-            ballEvent = 6;
-        }
-    }else
-    {
-        if(difference < -60) {
-            ballEvent = 7
-        }
-        else if(difference < -25 && difference > -60) {
-        ballEvent= 0
-        }
-        else if(difference < 0 && difference > -25) {
-            ballEvent = 1;
-        }
-        else if(difference < 22 && difference > 0) {
-            ballEvent = 2;
-        }
-        else if(difference < 35 && difference > 22) {
-            ballEvent = 3;
-        }
-        else if(difference < 50 && difference > 35) {
-            ballEvent = 4;
-        }
-        else if(difference < 60 && difference > 50) {
-            ballEvent = 5;
-        }
-        else if(difference > 60) {
-            ballEvent = 6;
-        } 
-
-    }
-
-
-    return ballEvent;
 }

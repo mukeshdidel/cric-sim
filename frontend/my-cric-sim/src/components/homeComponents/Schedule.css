@@ -1,8 +1,9 @@
 .schedule-div{
-    background-color: whitesmoke;
+    background-color: rgb(52, 51, 51);
     padding: 10px;
     margin: 20px;
     border-radius: 25px;
+    color: whitesmoke;
 
     display: flex;
     flex-direction: column;
@@ -11,14 +12,19 @@
 
 .schedule-button{
     padding: 10px 20px;
-    background-color: rgb(52, 51, 51);
-    color: white;
+    background-color: green;
+    color: whitesmoke;
     border: none;
     border-radius: 10px;
 }
 
+.schedule-button:hover{
+    background-color: darkgreen;
+    cursor: pointer;
+}
+
+
 .matches-list{
-    background-color: rgb(52, 51, 51);
     padding: 10px;
     margin: 20px;
     border-radius: 25px;
@@ -38,6 +44,10 @@
     text-decoration: none;
 }
 
-.matches-list a:hover{
-    color: blue;
+.matches-list li:hover{
+    background-color: aqua;
+    color: whitesmoke;
+    cursor: pointer;
 }
+
+

@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect,useRef } from 'react';
 import { useParams,NavLink, useNavigate } from "react-router-dom";
 import './Match.css'
-import simInning from './MatchAlgo.jsx';
+import SimInning from './MatchAlgo.jsx';
 import ScoreCard from './Scorecard.jsx';
 import Score from './Score.jsx';
 
@@ -9,32 +9,96 @@ import Score from './Score.jsx';
 export default function Match(){
     const id = useParams();
 
-    const [teams, setTeams] = useState({team1Name: "", team2Name: "",team1Id: -1, team2Id: -1, matchId: -1});
+    const [isMatchStarted, setIsMatchStarted] = useState(false);
+    const [isShowCompleteMatch, setIsShowCompleteMatch] = useState(false);
+    const [isResultSubmited, setIsResultSubmited] = useState(false);
+
+    
+
+    const [teams, setTeams] = useState({});
     const [winningTeamId, setWinningTeamId] = useState(-1);
  
     const [team1Players, setTeam1Players] = useState([]);
     const [team2Players, setTeam2Players] = useState([]);
-    const [score , setScore] = useState({ totalRuns: 0, totalWickets: 0, totalBalls: 0, isFirstInning: true, target:99999});
+    const [score , setScore] = useState({ totalRuns: 0, totalWickets: 0, totalBalls: 0, isFirstInning: true, target: 0 });
 
-    const [isMatchFinished,setIsMatchFinished] = useState(false);
-    const [isResultSubmitted, setIsResultSubmitted] = useState(false);
+    const [matchSpeed, setMatchSpeed] = useState(10);
+    const matchSpeedRef = useRef(matchSpeed);
+    useEffect(() => {
+        matchSpeedRef.current = matchSpeed;
+    }, [matchSpeed]); // Updates ref when matchSpeed changes
+    
 
     useEffect(() =>{
         async function fetchTeamData(){
 
             const newTeams = await getTeams(id);
             
-            setTeams({team1Name: newTeams[0].team1_name,
-                team2Name: newTeams[0].team2_name, team1Id: newTeams[0].team1_id, team2Id: newTeams[0].team2_id, matchId: newTeams[0].match_id ,season: newTeams[0].season});
+            setTeams({
+                team1Name: newTeams[0].team1_name, 
+                team2Name: newTeams[0].team2_name, 
+                team1Id: newTeams[0].team1_id, 
+                team2Id: newTeams[0].team2_id, 
+                matchId: newTeams[0].match_id,
+                season: newTeams[0].season});
             
             let [team1Players, team2Players] = await getTeamPlayers(newTeams[0].team1_id, newTeams[0].team2_id,newTeams[0].season);
 
             team1Players = team1Players.map(player => ({
-                ...player, runs: 0, b_faced: 0, six: 0, four: 0, wickets: 0, b_bowled: 0, batStatus: 0/*0 -> yet to bat, 1->striker, 2-> non-striker, 3-> out*/,overs : 0, bowlStatus: 0/* 0-> not bowling current over 1-> bowling current over   */,r_conceded: 0
+                ...player, 
+
+                runs: 0,
+                balls_f: 0, 
+                sixes: 0, 
+                fours: 0,
+                ones: 0,
+                twos:0,
+                threes:0,
+                dots:0, 
+
+                wickets: 0, 
+                balls_b: 0,                 
+                runs_c: 0,
+                sixes_c: 0, 
+                fours_c: 0,
+                ones_c: 0,
+                twos_c:0,
+                threes_c:0,
+                dots_b:0, 
+                extras: 0,
+
+                batStatus: 0,/*0 -> yet to bat, 1->striker, 2-> non-striker, 3-> out*/
+                overs: 0, 
+                bowlStatus: 0/* 0-> not bowling current over 1-> bowling current over   */
+
             }))
 
             team2Players = team2Players.map(player => ({
-                ...player, runs: 0, b_faced: 0, six: 0, four: 0, wickets: 0, b_bowled: 0,batStatus: 0,overs : 0, bowlStatus: 0,r_conceded: 0
+                ...player, 
+
+                runs: 0,
+                balls_f: 0, 
+                sixes: 0, 
+                fours: 0,
+                ones: 0,
+                twos:0,
+                threes:0,
+                dots:0, 
+
+                wickets: 0, 
+                balls_b: 0,                 
+                runs_c: 0,
+                sixes_c: 0, 
+                fours_c: 0,
+                ones_c: 0,
+                twos_c:0,
+                threes_c:0,
+                dots_b:0, 
+                extras: 0,
+
+                batStatus: 0,/*0 -> yet to bat, 1->striker, 2-> non-striker, 3-> out*/
+                overs: 0, 
+                bowlStatus: 0/* 0-> not bowling current over 1-> bowling current over   */
             }))
 
             setTeam1Players(team1Players);
@@ -47,31 +111,40 @@ export default function Match(){
 
     async function handleStartClick(){
 
-        const [newTeam1Players,newTeam2Players,newScore] = await simInning
-        (team1Players, team2Players,setTeam1Players, setTeam2Players,score , setScore);
-        
-        
+        setIsMatchStarted(true);
 
-        const [finalTeam2Players,finalTeam1Players,finalScore] = await simInning
-        (newTeam2Players, newTeam1Players ,setTeam2Players, setTeam1Players,{...newScore,target: newScore.totalRuns + 1, isFirstInning:false,}, setScore);
+        const [newTeam1Players,newTeam2Players,firstScore] = await SimInning
+        (team1Players, team2Players, setTeam1Players, setTeam2Players, score, setScore, matchSpeedRef);
+        
+        const newScore = {
+            ...firstScore, 
+            team1TotalRuns: firstScore.totalRuns,
+            team1TotalBalls: firstScore.totalBalls
+        };
+
+
+
+        const [finalTeam2Players,finalTeam1Players,finalScore] = await SimInning
+        (newTeam2Players, newTeam1Players ,setTeam2Players, setTeam1Players,{...newScore,target: newScore.totalRuns + 1, isFirstInning:false}, setScore,matchSpeedRef);
 
 
         setTeam1Players(finalTeam1Players);
         setTeam2Players(finalTeam2Players); 
-        setIsMatchFinished(true)
 
-        if(newScore.totalRuns > finalScore.totalRuns){
+        if(newScore.team1TotalRuns > finalScore.totalRuns){
             setWinningTeamId(teams.team1Id);
-        }else if(newScore.totalRuns < finalScore.totalRuns){
+        }else if(newScore.team1TotalRuns < finalScore.totalRuns){
             setWinningTeamId(teams.team2Id);
         }
 
+        setIsShowCompleteMatch(true);
+
     }
 
-    async function handleCompleteClick(){
-        if(!isMatchFinished) return;
-        
-        setIsResultSubmitted(true);
+    async function handleCompleteMatch(){
+
+        setIsShowCompleteMatch(false);
+
         const data = {
             team1Players: team1Players,
             team2Players: team2Players,
@@ -80,8 +153,21 @@ export default function Match(){
             teams: teams
         }
         await postResult(data);
-        
+
+        setIsResultSubmited(true);
     }
+
+
+
+
+    const handleSpeedChange = (e) => {
+        let value = Number(e.target.value);
+
+        if (value < 1) value = 1;
+        if (value > 100) value = 100;
+        setMatchSpeed(value);
+
+      };
 
     return (
         <>
@@ -90,20 +176,27 @@ export default function Match(){
                     <h2>{teams.team1Name} vs {teams.team2Name} </h2>
                 </div>
                 <div className='match-info'>
-                    <div className='button-div'>
-                        <button className="match-button" onClick={handleStartClick}>Start Match</button>                   
-                        {isResultSubmitted ? 
-                            <button className="match-button"><NavLink to='/'>Home</NavLink></button>
-                        :
-                            <button className="match-button" onClick={handleCompleteClick}>Complete</button>
-                        } 
+
+                    <label>match speed 1-100 ms</label>
+                    <input type="number" className='match-speed-input' min={1} max={100} value={matchSpeed} onChange={handleSpeedChange}/>
+
+                    <div className='button-div'> 
+                        {!isMatchStarted ? 
+                            <button className="match-button" onClick={handleStartClick}>Start Match</button> : null
+                        }        
+                        {isShowCompleteMatch ?
+                            <button className="match-button" onClick={handleCompleteMatch}>complete Match</button> : null
+                        }           
+                        {isResultSubmited ?
+                            <button className="match-button"><NavLink to='/'>Home</NavLink></button> : null
+                        }    
                     </div>
 
                     <h3>Scorecard</h3>
                     <Score score={score}/>                    
                     <div className='match-scorecard'>
-                    <ScoreCard teamPlayers={team1Players}/>
-                    <ScoreCard teamPlayers={team2Players}/>
+                    <ScoreCard batingTeam={team1Players} bowlingTeam={team2Players}/>
+                    <ScoreCard batingTeam={team2Players} bowlingTeam={team1Players}/>
                     </div>
 
 
@@ -116,7 +209,7 @@ export default function Match(){
 
 async function getTeams(id) {
     try{
-        console.log(id);
+
         const response = await fetch('http://localhost:5000/match', {
             method: 'POST',
             headers: {
@@ -134,14 +227,13 @@ async function getTeams(id) {
 
 async function getTeamPlayers(team_id1, team_id2) {
     try{
-        console.log(team_id1, team_id2);
+
 
         const [response1, response2] = await Promise.all([
             fetch(`http://localhost:5000/matchplayers/${team_id1}`),
             fetch(`http://localhost:5000/matchplayers/${team_id2}`)
         ]);
 
-        // Convert responses to JSON
         const [data1, data2] = await Promise.all([
             response1.json(),
             response2.json()
@@ -156,7 +248,7 @@ async function getTeamPlayers(team_id1, team_id2) {
 
 async function postResult(result){
     try{
-        const response = await fetch('http://localhost:5000/result', {
+        await fetch('http://localhost:5000/result', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
