@@ -1,0 +1,71 @@
+
+.draft{
+    width: 100%;
+    height: 100%;
+
+
+}
+
+
+.draft-teams{
+
+
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+
+}
+
+.draft-team-info{
+    background-color: rgb(52,52,51);
+    color: white;
+
+    width: 200px;
+    text-align: center;
+    
+    margin: 1rem;
+}
+
+.draft-players-div{
+    background-color: rgb(52,52,51);
+
+    text-align: center;
+}
+
+.draft-players-div button{
+    height: 3rem;
+    width: 6rem;
+
+    margin: 2rem;
+
+}
+
+.draft-players-div button:hover{
+    cursor: pointer;
+}
+
+
+.draft-players-div h2{
+    color: white
+}
+
+.slot-players{
+    display: flex;
+    flex-wrap: wrap;
+    color: white;
+
+    background-color: darkslategrey;
+    width: 90%;
+    margin-inline: auto;
+    border-radius: 10px;
+}
+
+.draft-player{
+
+    background-color: rgb(52,52,51);
+    margin: 0.5rem;
+    padding: 0.25rem;
+    border-radius: 10px;
+    width: 100px;
+
+}

@@ -39,9 +39,9 @@ export default function ScoreCard(props){
 
                 <div className="yet-to-bat">
                     <h3>Yet to bat</h3>
-                    <p>
+                    <p >
                         {
-                            yetToBat?.map((player) => (<span> ● {player.player_name}</span>))
+                            yetToBat?.map((player) => (<span key={player.player_id}> ● {player.player_name}</span>))
                         }
                     </p>
                 </div>

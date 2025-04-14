@@ -6,6 +6,7 @@ const pool = mysql.createPool({
     user: 'root',
     password: 'Mukesh@7976',
     database: 'cric_sim_db'
+
 }).promise();
 
 async function getSeasons(){
@@ -125,7 +126,7 @@ async function exportMatch(match_id){
 
 async function getMatchPlayers(team_id){
     try{
-        const [players] = await pool.query(`select * from players where team_id = ?`,[team_id]);
+        const [players] = await pool.query(`select * from players where team_id = ? order by bat_posi, bat_rating desc;`,[team_id]);
         return players;
     }
     catch (error){
@@ -194,6 +195,37 @@ async function updatePlayerStats(player_id, season, team_id, runs, b_faced, six,
     }
 }
 
+async function getPlayers(){
+    try{
+    const [rows] = await pool.query(`SELECT p.player_id, p.player_name, p.type, p.team_id, ps.mvp_points
+                                    FROM player_stat ps JOIN  players p ON ps.player_id = p.player_id JOIN teams t ON p.team_id = t.team_id 
+                                    WHERE ps.s_season = (SELECT MAX(s_season) FROM player_stat) ORDER BY ps.mvp_points DESC;`);
+    return rows;        
+    }
+    catch(error){
+        console.error(error);
+    }
+}
 
+async function draftPlayer(player_id, team_id){
+   try{
+     await pool.query(`update players set team_id = ? where player_id = ?`,[team_id, player_id]);
+   }
+   catch(error){
+    console.error(error);
+    }
+}
 
-export {getTable,getPlayerStats,getTeams,insertMatches,exportMatches,truncateSchedule,exportMatch,getMatchPlayers,updateLeaueTable,updateSchedule,getSeasons,updatePlayerStats,insertLeague};
+async function getPlayersByTeam(team_id) {
+    try{
+        const [rows] = await pool.query(`SELECT p.player_id, p.player_name, p.type, p.team_id, ps.mvp_points
+                                        FROM player_stat ps JOIN  players p ON ps.player_id = p.player_id JOIN teams t ON p.team_id = t.team_id 
+                                        WHERE ps.s_season = (SELECT MAX(s_season) FROM player_stat) and p.team_id = ? ORDER BY ps.mvp_points DESC;`,[team_id]);
+        return rows;     
+    }
+    catch(error){
+        console.error(error);
+    }
+}
+
+export {getTable,getPlayerStats,getTeams,insertMatches,exportMatches,truncateSchedule,exportMatch,getMatchPlayers,updateLeaueTable,updateSchedule,getSeasons,updatePlayerStats,insertLeague,getPlayers, draftPlayer, getPlayersByTeam};

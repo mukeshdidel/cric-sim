@@ -1,7 +1,7 @@
 
 import express from 'express';
 import cors from 'cors'
-import {getSeasons,getTable,getPlayerStats,getTeams,insertMatches,exportMatches,truncateSchedule,exportMatch,getMatchPlayers,updateLeaueTable,updateSchedule,updatePlayerStats,insertLeague} from './database.js'
+import {getSeasons,getTable,getPlayerStats,getTeams,insertMatches,exportMatches,truncateSchedule,exportMatch,getMatchPlayers,updateLeaueTable,updateSchedule,updatePlayerStats,insertLeague,  getPlayers, draftPlayer, getPlayersByTeam} from './database.js'
 
 const app = express();
 
@@ -107,7 +107,7 @@ app.get('/initialmatches',async function(req, res){
 })
 
 
-app.use('/matchplayers/:id',async function(req, res){
+app.get('/matchplayers/:id',async function(req, res){
     try{
         const id = req.params.id;
         const matchplayers = await getMatchPlayers(id);
@@ -173,7 +173,49 @@ app.post('/result',async function (req,res){
     }
 })
 
+app.get('/players', async function(req, res){
+    try{
+        const players = await getPlayers();        
+        res.json(players); 
+    }
+    catch(error){
+        console.log(error);
+        res.status(500).send('server error');
+    }
+})
 
+app.post('/draft', async function(req, res){
+    
+    try{
+        const players = req.body;
+
+        players.forEach(async function(player){
+            await draftPlayer(player.player_id, player.team_id);
+        });
+        res.status(200).json({ message: 'Draft post processed successfully' });
+    }
+    catch(error){
+        console.log(error);
+        res.status(500).send('server error');
+    }    
+})
+
+app.get('/teams-info/:id', async (req, res) => {
+    
+    try{
+        const team_id = req.params.id;
+        console.log(team_id);
+        
+        const players = await getPlayersByTeam(team_id);
+    
+        res.json(players);
+    }
+    catch(error){
+        console.log(error);
+        res.status(500).send('server error');
+    }   
+
+})
 
 app.use((err,req,res,next) => {
     console.error(err.stack)

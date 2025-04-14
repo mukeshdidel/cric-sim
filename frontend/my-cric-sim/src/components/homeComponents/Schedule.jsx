@@ -1,11 +1,13 @@
 import {useState,useEffect} from 'react'
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import './Schedule.css'
 
 export default function Schedule(){
     const [matches ,setMatches] = useState([]);
     const [isloading, setisLoading ] = useState(false);
     const [IsError , setIsError] = useState(false);
+
+    const navigate = useNavigate();
     
     useEffect(() => {
         async function getMatches(){
@@ -32,6 +34,10 @@ export default function Schedule(){
             const newSchedule = createSchedule(data);
             const newSchedule2 = await insertSchedule(newSchedule);
             setMatches(newSchedule2);
+
+            if(newSchedule2[0].season - 1 != 0)
+                navigate("/draft");
+            
         } else {
             console.log("User clicked Cancel");
         }
@@ -44,7 +50,10 @@ export default function Schedule(){
                 <h2>Schedule</h2>
                 {isloading && <h1>loading...</h1>}
                 {IsError && <h1>Error fetching matches</h1>} 
-                <button className="schedule-button" onClick={sched}>generate schedule</button>
+                {
+                    matches.length === 0 ? <button className="schedule-button" onClick={sched}>Start New Season</button> : null
+                }
+
                 <ul className='matches-list'>
                     {matches.map(match => (
                         <li key={match.match_id}>

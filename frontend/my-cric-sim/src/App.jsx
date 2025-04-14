@@ -6,6 +6,9 @@ import Table from './components/Table.jsx';
 import Home from './components/Home.jsx';
 import Stats from './components/Stats.jsx';
 import Match from './components/homeComponents/Match.jsx';
+import Draft from './components/homeComponents/Draft.jsx';
+import Team from './components/homeComponents/Team.jsx'
+
 
 const router = createBrowserRouter([
     {
@@ -50,6 +53,26 @@ const router = createBrowserRouter([
       ),
 
     },
+    {
+      path: "/draft",
+
+      element: (
+        <div className="container">
+          <Draft/>
+        </div>
+      )
+    },
+    {
+      path: "/team/:id",
+
+      element: (
+        <div className="container">
+          <Navbar/>
+          <Team/>
+        </div>
+      )
+    }
+
 ]);
 
 function App() {

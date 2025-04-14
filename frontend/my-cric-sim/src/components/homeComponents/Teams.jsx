@@ -1,5 +1,6 @@
 import {useState,useEffect} from 'react'
 import './teams.css'
+import { NavLink } from 'react-router-dom';
 
 export default function Teams(){        
         
@@ -25,7 +26,7 @@ export default function Teams(){
             <h2>Teams</h2>
             <ul className='teams-list'>
                 {teams.map(team => (
-                    <li key={team.team_id}>{team.team_name}</li>
+                    <NavLink to={`/team/${team.team_id}`} key={team.team_id}><li>{team.team_name}</li></NavLink>
                 ))}
             </ul>
         </div>

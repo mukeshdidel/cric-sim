@@ -95,12 +95,14 @@ export default function Stats(){
                             <th onClick={()=>handleOrderBy('balls_f')}>bowls played</th>
                             <th onClick={()=>handleOrderBy('strike_rate')}>strike rate</th>
                             <th onClick={()=>handleOrderBy('sixes')}>sixes</th>
-                            <th onClick={()=>handleOrderBy('fours')}>fours</th>
+                            <th onClick={()=>handleOrderBy('fours')}>fours</th>                            
+
                             <th onClick={()=>handleOrderBy('wickets')}>wickets</th>
                             <th onClick={()=>handleOrderBy('balls_b')}>bowls bowled</th>
                             <th onClick={()=>handleOrderBy('runs_c')}>conceded</th>
                             <th onClick={()=>handleOrderBy('dots_b')}>dots</th>
                             <th onClick={()=>handleOrderBy('mvp_points')}>MVP points</th>
+
                             <th onClick={()=>handleOrderBy('economy')}>economy</th>
                         </tr>
                     </thead>

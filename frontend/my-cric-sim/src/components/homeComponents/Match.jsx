@@ -22,7 +22,7 @@ export default function Match(){
     const [team2Players, setTeam2Players] = useState([]);
     const [score , setScore] = useState({ totalRuns: 0, totalWickets: 0, totalBalls: 0, isFirstInning: true, target: 0 });
 
-    const [matchSpeed, setMatchSpeed] = useState(10);
+    const [matchSpeed, setMatchSpeed] = useState(0);
     const matchSpeedRef = useRef(matchSpeed);
     useEffect(() => {
         matchSpeedRef.current = matchSpeed;
@@ -163,7 +163,7 @@ export default function Match(){
     const handleSpeedChange = (e) => {
         let value = Number(e.target.value);
 
-        if (value < 1) value = 1;
+        if (value < 0) value = 0;
         if (value > 100) value = 100;
         setMatchSpeed(value);
 
@@ -178,7 +178,7 @@ export default function Match(){
                 <div className='match-info'>
 
                     <label>match speed 1-100 ms</label>
-                    <input type="number" className='match-speed-input' min={1} max={100} value={matchSpeed} onChange={handleSpeedChange}/>
+                    <input type="number" className='match-speed-input' min={0} max={100} value={matchSpeed} onChange={handleSpeedChange}/>
 
                     <div className='button-div'> 
                         {!isMatchStarted ? 
@@ -198,9 +198,6 @@ export default function Match(){
                     <ScoreCard batingTeam={team1Players} bowlingTeam={team2Players}/>
                     <ScoreCard batingTeam={team2Players} bowlingTeam={team1Players}/>
                     </div>
-
-
-
                 </div>
             </div>
         </>
