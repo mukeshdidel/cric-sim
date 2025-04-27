@@ -10,8 +10,12 @@ select * from players where team_id =9 ;
 
 SELECT p.player_id, p.player_name, p.type, p.team_id, ps.mvp_points
 FROM player_stat ps JOIN  players p ON ps.player_id = p.player_id JOIN teams t ON p.team_id = t.team_id 
-WHERE ps.s_season = (SELECT MAX(s_season) FROM player_stat) ORDER BY ps.mvp_points DESC;
+WHERE ps.s_season = (SELECT MAX(s_season) FROM player_stat) and p.team_id = 2 ORDER BY ps.mvp_points DESC;
 
+
+
+
+select * from players where team_id = ? order by bat_posi, bat_rating desc;
 
 insert into league_table ( team_id, wins, losses, draws, matches, season, runs_s, balls_f, runs_c , balls_b) values (1,0,0,0,0,0,0,0,0,0),
 																													(2,0,0,0,0,0,0,0,0,0),

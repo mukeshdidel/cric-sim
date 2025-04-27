@@ -35,7 +35,8 @@ export default function Draft(){
                         batsmanCount: 0,
                         bowlerCount: 0,
                         allrounderCount: 0,
-                        playerCount: 0
+                        playerCount: 0,
+                        draft_points: 0
                     }
                 })
 
@@ -63,16 +64,19 @@ export default function Draft(){
                                 teams[i].playerCount++;
                                 teams[i].allrounderCount++;
                                 player.isSold =  true;
+                                teams[i].draft_points += Number(player.mvp_points); 
                             }
                             if(player.type === 'bowler') {
                                 teams[i].playerCount++;
                                 teams[i].bowlerCount++;
                                 player.isSold =  true;
+                                teams[i].draft_points +=Number(player.mvp_points);
                             }
                             if(player.type === 'batsman'){
                                 teams[i].playerCount++;
                                 teams[i].batsmanCount++;
                                 player.isSold =  true;
+                                teams[i].draft_points += Number(player.mvp_points); 
                             }
                         }   
                     }
@@ -129,7 +133,8 @@ export default function Draft(){
             slot1[playerIndex].isSold = true;
             slot1[playerIndex].team_id = teams[currTeamIndex].team_id;
             teams[currTeamIndex].playerCount++;
-
+            teams[currTeamIndex].draft_points += Number(slot1[playerIndex].mvp_points); 
+            
             setTeams(teams);
             setLastDraft(slot1[playerIndex])
 
@@ -160,6 +165,7 @@ export default function Draft(){
             slot2[playerIndex].isSold = true;
             slot2[playerIndex].team_id = teams[currTeamIndex].team_id;
             teams[currTeamIndex].playerCount++;
+            teams[currTeamIndex].draft_points += Number(slot2[playerIndex].mvp_points); 
 
             setTeams(teams);
             setLastDraft(slot2[playerIndex])
@@ -184,6 +190,7 @@ export default function Draft(){
             slot3[playerIndex].isSold = true;
             slot3[playerIndex].team_id = teams[currTeamIndex].team_id;
             teams[currTeamIndex].playerCount++;
+            teams[currTeamIndex].draft_points += Number(slot3[playerIndex].mvp_points); 
 
             setTeams(teams);
             setLastDraft(slot3[playerIndex])
@@ -228,11 +235,12 @@ export default function Draft(){
                     teams.map(team => {
                         return (
                             <div className="draft-team-info" key={team.team_id}>
-                                <h3>{team.team_name}</h3>
+                                <h3>{team.team_id}  {team.team_name}</h3>
                                 <p>batsmans: {team.batsmanCount}</p>
                                 <p>bowlers: {team.bowlerCount}</p>
                                 <p>all rounders: {team.allrounderCount}</p>
                                 <p>total: {team.playerCount}</p>
+                                <p>draft points: {team.draft_points}</p>
                             </div>
                         );
                     } )
@@ -241,6 +249,7 @@ export default function Draft(){
             <div className="draft-players-div">
                 <div className="last-draft">
                     <h3>{lastDraft?.player_name}</h3>
+                    <p>{lastDraft?.mvp_points}</p>
                     <p>{lastDraft?.team_id}</p>
                 </div>
                 {
