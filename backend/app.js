@@ -204,7 +204,7 @@ app.get('/teams-info/:id', async (req, res) => {
     
     try{
         const team_id = req.params.id;
-        console.log(team_id);
+
         
         const players = await getPlayersByTeam(team_id);
     

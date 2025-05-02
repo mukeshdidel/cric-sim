@@ -31,7 +31,7 @@ async function getTable(season){
 async function getPlayerStats(season){
     try{
 
-        const [stats] = await pool.query(`select * from  player_stat natural join players natural join teams where s_season = ?;`,[season]);
+        const [stats] = await pool.query(`select * from player_stat join players on player_stat.player_id = players.player_id join teams on teams.team_id = players.team_id where s_season = ?;`,[season]);
         return stats;
 
     }
