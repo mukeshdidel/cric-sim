@@ -193,7 +193,8 @@ export default function Match(){
                     </div>
 
                     <h3>Scorecard</h3>
-                    <Score score={score}/>                    
+                    <Score score={score}/>  
+
                     <div className='match-scorecard'>
                     <ScoreCard batingTeam={team1Players} bowlingTeam={team2Players}/>
                     <ScoreCard batingTeam={team2Players} bowlingTeam={team1Players}/>
