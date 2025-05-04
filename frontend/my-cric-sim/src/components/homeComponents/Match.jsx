@@ -1,10 +1,13 @@
-import { useState, useEffect,useRef } from 'react';
+import { useState, useEffect,useRef, useContext, createContext } from 'react';
 import { useParams,NavLink, useNavigate } from "react-router-dom";
+import Ground from './Ground.jsx';
 import './Match.css'
 import SimInning from './MatchAlgo.jsx';
 import ScoreCard from './Scorecard.jsx';
 import Score from './Score.jsx';
 
+
+export const matchContext = createContext();
 
 export default function Match(){
     const id = useParams();
@@ -18,6 +21,8 @@ export default function Match(){
     const [teams, setTeams] = useState({});
     const [winningTeamId, setWinningTeamId] = useState(-1);
  
+
+
     const [team1Players, setTeam1Players] = useState([]);
     const [team2Players, setTeam2Players] = useState([]);
     const [score , setScore] = useState({ totalRuns: 0, totalWickets: 0, totalBalls: 0, isFirstInning: true, target: 0 });
@@ -157,9 +162,6 @@ export default function Match(){
         setIsResultSubmited(true);
     }
 
-
-
-
     const handleSpeedChange = (e) => {
         let value = Number(e.target.value);
 
@@ -191,14 +193,15 @@ export default function Match(){
                             <button className="match-button"><NavLink to='/'>Home</NavLink></button> : null
                         }    
                     </div>
-
+                    
                     <h3>Scorecard</h3>
-                    <Score score={score}/>  
-
-                    <div className='match-scorecard'>
-                    <ScoreCard batingTeam={team1Players} bowlingTeam={team2Players}/>
-                    <ScoreCard batingTeam={team2Players} bowlingTeam={team1Players}/>
-                    </div>
+                    <matchContext.Provider value={{team1Players, team2Players, matchSpeedRef, score}}>
+                        <Score />  
+                        <div className='match-scorecard'>
+                        <Ground />
+                        <ScoreCard />
+                        </div>
+                    </matchContext.Provider>
                 </div>
             </div>
         </>

@@ -1,10 +1,10 @@
+import { useContext } from "react";
+import { matchContext } from "./Match";
 
-
-export default function Score({score}){
+export default function Score(){
 
     let ScoreComponent = <></>;
-    /* console.log(score);
- */
+    const {score} = useContext(matchContext);
     if(score.isFirstInning === true){
         ScoreComponent = (
         <>
@@ -16,7 +16,11 @@ export default function Score({score}){
             </div>
             <div>
                 <p>Run Rate</p>
-                <p>{(score.totalRuns/score.totalBalls*6).toFixed(2)}</p>
+                <p>
+                    {
+                    isNaN((score.totalRuns/score.totalBalls*6).toFixed(2)) ? 0 : (score.totalRuns/score.totalBalls*6).toFixed(2)
+                    }
+                </p>
             </div>
             
         </>

@@ -1,17 +1,34 @@
+import { useContext, useState } from "react";
+import { matchContext } from "./Match";
 
 
-export default function ScoreCard(props){
-    const batingTeam = props.batingTeam;
-    const bowlingTeam = props.bowlingTeam;
+export default function ScoreCard(){
 
-    const playingBatingTeam = batingTeam?.filter(player => player.batStatus != 0)
-    const yetToBat = batingTeam?.filter(player => player.batStatus == 0);
+    const [isFirstInning, setIsFirstInning] = useState(true)
 
-    const playingBowlingTeam = bowlingTeam?.filter(player => player.overs > 0);
+    const {team1Players, team2Players} = useContext(matchContext);
+
+    let playingBatingTeam;
+    let yetToBat;
+    let playingBowlingTeam;
+
+    if(isFirstInning){
+       playingBatingTeam = team1Players?.filter(player => player.batStatus != 0)
+       yetToBat = team1Players?.filter(player => player.batStatus == 0);
+       playingBowlingTeam = team2Players?.filter(player => player.overs > 0)
+    }
+    else{
+        playingBatingTeam = team2Players?.filter(player => player.batStatus != 0)
+        yetToBat = team2Players?.filter(player => player.batStatus == 0);  
+        playingBowlingTeam = team1Players?.filter(player => player.overs > 0)
+    }
 
     return (
         <>
-            <div className='team-scorecard'>            
+            <div className='team-scorecard'>  
+                <div>
+                    <button onClick={()=>{setIsFirstInning(x => !x)}}>switch team</button>
+                </div>          
                 <table>
                     <thead className='scorecard-head'>
                         <tr>
@@ -71,7 +88,7 @@ export default function ScoreCard(props){
                         ))}
                     </tbody>
                 </table> 
-
+                
             </div>
         </>
     );
