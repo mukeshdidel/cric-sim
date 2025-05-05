@@ -1,7 +1,10 @@
+const waitFor = async (conditionFn, checkInterval = 50) => {
+    while (!conditionFn()) {
+      await new Promise(resolve => setTimeout(resolve, checkInterval));
+    }
+  };
 
-
-
- export default async function SimInning(battingTeam,bowlingTeam,setBattingTeamPlayers,setbowlingTeamPlayers, score , setScore, matchSpeedRef) {
+ export default async function SimInning(battingTeam,bowlingTeam,setBattingTeamPlayers,setbowlingTeamPlayers, score , setScore, matchSpeedRef, setBallData, isAnimationDone , ballEvent) {
 
 
     
@@ -54,6 +57,14 @@
 
         
         for(let j = 0 ; j<6;j++){
+            
+
+            setBallData(Date.now())
+            setScore(newScore);
+
+            await waitFor(() => isAnimationDone.current === true);
+            isAnimationDone.current = false;
+
 
             battingTeam[s].batStatus = 1;
             battingTeam[ns].batStatus = 2;
@@ -61,7 +72,7 @@
             
 
             let x;
-            do{
+/*             do{
                 x = BallEventCalculator(battingTeam[s],bowlingTeam[b])  // a random number for next ball event
                 if(x===5){ // 5 for wide
                     totalRuns++;
@@ -72,7 +83,9 @@
                     }
                     setbowlingTeamPlayers(bowlingTeam); 
                 }   
-            }while(x===5);
+            }while(x===5); */
+
+            x = ballEvent.current
 
             if(x===0 || x===1|| x===2|| x===3 || x===4 || x===6){
                 totalRuns += x;                
@@ -122,7 +135,7 @@
                     return [battingTeam, bowlingTeam, newScore] ;
                 }
             }
-            else if(x===7){
+            else if(x===-1){
                 battingTeam[s] = { 
                     ...battingTeam[s],
                     balls_f: battingTeam[s].balls_f + 1,

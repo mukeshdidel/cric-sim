@@ -1,13 +1,13 @@
 
 import {Stage, Layer, Circle, Rect, Shape} from 'react-konva'
-import { useState, useEffect, useRef } from 'react';
-
+import { useState, useEffect, useRef, useContext } from 'react';
+import { matchContext } from './Match';
 function isCollision(c1,c2){
     const dx = c1.x - c2.x;
     const dy = c1.y - c2.y;
     const d = Math.sqrt(dx*dx + dy*dy);
     if (c1.z > 10) return false;
-    return 20 >= d
+    return 10 >= d
 }
 
 function isOutOfBounds(x, y) {
@@ -17,19 +17,22 @@ function isOutOfBounds(x, y) {
 }
 
 
-function intercept(player, ball, ballVel, playerSpeed) { // 
+function intercept(player, ball, ballVel,ivZ, playerSpeed) {
     const dx = ball.x - player.x;
     const dy = ball.y - player.y;
     const vx = ballVel.x;
     const vy = ballVel.y;
-    const vz = ballVel.z || 0;
+    const vz = ivZ || 0;
     const z = ball.z || 0;
+
+    
+
 
     const a = vx ** 2 + vy ** 2 - playerSpeed ** 2;
     const b = 2 * (dx * vx + dy * vy);
     const c = dx ** 2 + dy ** 2;
-    const d = b ** 2 - 4 * a * c;
 
+    const d = b ** 2 - 4 * a * c;
     let interceptT = -1;
     if (d >= 0 && a !== 0) {
         const sqrtD = Math.sqrt(d);
@@ -37,76 +40,116 @@ function intercept(player, ball, ballVel, playerSpeed) { //
         const t2 = (-b - sqrtD) / (2 * a);
         const tCandidates = [t1, t2].filter(t => t >= 0);
         interceptT = tCandidates.length > 0 ? Math.min(...tCandidates) : -1;
-    }
 
-    const interceptPoint = interceptT >= 0
+    }
+    
+
+    let interceptPoint = interceptT >= 0
         ? { x: ball.x + vx * interceptT, y: ball.y + vy * interceptT }
         : null;
 
+
     let landingPoint = null;
-    if (z > 0) {
+    if (vz.current > 0) {
         const g = 0.013;
-        const landingT = (-vz - Math.sqrt(vz ** 2 + 2 * g * z)) / (-g);
-        landingPoint = {
-            x: ball.x + vx * landingT,
-            y: ball.y + vy * landingT
-        };
+        const a = -0.5 * g;
+        const b = vz.current;
+        const c = ball.z; // current z-position of the ball
+
+        const discriminant = b * b - 4 * a * c;
+    
+        if (discriminant >= 0) {
+            const sqrtD = Math.sqrt(discriminant);
+            const t1 = (-b + sqrtD) / (2 * a);
+            const t2 = (-b - sqrtD) / (2 * a);
+            const landingT = Math.max(t1, t2); // choose the positive root
+    
+            landingPoint = {
+                x: ball.x + vx * landingT,
+                y: ball.y + vy * landingT
+            };
+        }
     }
+    
 
     let target;
     if (interceptPoint && landingPoint) {
-        const d1 = Math.hypot(interceptPoint.x - player.x, interceptPoint.y - player.y);
-        const d2 = Math.hypot(landingPoint.x - player.x, landingPoint.y - player.y);
+        const d1 = Math.hypot(interceptPoint.x - 370, interceptPoint.y - (370-48));
+        const d2 = Math.hypot(landingPoint.x - 370, landingPoint.y - (370-48));
         target = d2 > d1 ? landingPoint : interceptPoint;
-    } else if (landingPoint) {
-        target = landingPoint;
-    } else if (interceptPoint) {
-        target = interceptPoint;
-    } else {
- 
-        const t = 340 / Math.sqrt(vx * vx + vy * vy);
-        target = { x: 370 + vx * t, y: 370 + vy * t };
     }
+    if(!(interceptPoint &&  Math.hypot(370 - interceptPoint.x, 370-interceptPoint.y ) < 340 )) {
+        const t = 340 / Math.hypot(ballVel.x, ballVel.y);
+        const x = 370 + ballVel.x * t 
+        const y = 370 + ballVel.y * t 
+        interceptPoint ={x: x, y: y};
+        target = interceptPoint;
+    }
+    if(Math.hypot(370 - landingPoint.x, 370 - landingPoint.y) > 340 ){
+        const t = 340 / Math.hypot(ballVel.x, ballVel.y);
+        const x = 370 + ballVel.x * t 
+        const y = 370 + ballVel.y * t 
+        landingPoint ={x: x, y: y};
+        target = landingPoint;       
+    }
+
 
     const dirX = target.x - player.x;
     const dirY = target.y - player.y;
+
     const mag = Math.hypot(dirX, dirY) || 1;
     return {
         direction: { x: dirX / mag, y: dirY / mag },
-        target
+        target,
+        landingPoint
     };
 }
 
-export default function Component(){
+export default function Ground(){
+
+    const { isAnimationDone, ballEvent } = useContext(matchContext);
 
     const [fielders, setFielders] = useState(() => {
 
-        const circleFielders = Array.from({ length: 11 }, (_, i) => {
+        const circleFielders = Array.from({ length: 9 }, (_, i) => {
           
-            if(i=== 9){
+            if(i=== 10){
                 return{
+                    id: i,
                     x: 370,
                     y: 370 + 48,
                     color: 'green',
-                    isSpecial: true
+                    isSpecial: true,
+                    vx: 0,
+                    vy: 0,
+                    tpx: 370,
+                    tpy: 370+48
                 }
             }
-            if(i=== 10){
+            if(i=== 9){
                 return{
+                    id:i,
                     x: 370,
                     y: 370-50,
                     color: 'green',
-                    isSpecial: true 
+                    isSpecial: true ,
+                    vx: 0,
+                    vy: 0,
+                    tpx: 370,
+                    tpy: 370-48
                 }
             }
-            if(i !== 9 && i !== 10){
+            if(i !== 10 && i !== 9){
                 return {
                     id: i,
                     x: 370 + (i%2 === 0 ? 300 : 150 )* Math.cos((2*Math.PI*i)/10),
                     y: 370 + ((i%2 === 0 ? 300 : 150 ))* Math.sin((2*Math.PI*i)/10),
                     color: 'green',
                     isSpecial: false,
-
+                    vx: 0,
+                    vy: 0,
+                    tpx: 370 + (i%2 === 0 ? 300 : 150 )* Math.cos((2*Math.PI*i)/10),
+                    tpy: 370+ ((i%2 === 0 ? 300 : 150 ))* Math.sin((2*Math.PI*i)/10)
                 }          
             };
 
@@ -115,40 +158,111 @@ export default function Component(){
         return circleFielders;
       });
 
-      const [ball, setBall] = useState({x: 370, y: 370-48, z:0.1});
-      const [velocity, setvelocity] = useState({x: 0, y:0, z:0});
+      const Tpoint = useRef({ x: 370 , y: 370})
+      const Lpoint = useRef({ x: 370 , y: 370 + 48})
+
+
+
+      const [ball, setBall] = useState({x: 370, y: 370-48, z:0.001});
+      const velocityRef = useRef({x: 0, y:0, z:0});
       const [ballRadius, setBallRadius] =useState(5)
+
       const g = 0.013;
       const startTime = useRef();
+      const initialVelocityZRef = useRef(0);
 
       const animationRef = useRef();
+      const players_are_moving = useRef(false);
+     
+
       useEffect(()=>{
         const velo = Math.random()*3;
         const angle = Math.random() * 2 *Math.PI;
         const vx = Math.cos(angle)*velo;
         const vy = Math.sin(angle)*velo;
-
-        const vz = Math.random()*1.5;
+        const vz = Math.random()*0.0002;
         startTime.current = performance.now()
-        setvelocity({x: vx, y:vy, z: vz});
+
+
+        velocityRef.current = {x: vx, y: vy, z: vz};
+        initialVelocityZRef.current = vz;
 
       },[])
 
       useEffect(()=>{
         function animateBall(){
 
+            if(!players_are_moving.current){
+                setFielders(prev =>
+                    prev.map(f => {
+                        if (!f.isSpecial) {
+                            const { direction, target, landingPoint } = intercept(f, ball, velocityRef.current, initialVelocityZRef, 0.5);
+                            if(target){
+                                Tpoint.current = {x: target.x, y: target.y};
+                            }
+                            if(landingPoint){
+                                Lpoint.current ={x: landingPoint.x, y: landingPoint.y}
+                            }
+
+                            return {
+                                ...f,
+                                vx: direction.x*0.25,
+                                vy: direction.y*0.25,
+                                tpx: target.x,
+                                tpy: target.y,
+                            };
+                        }
+                        return f;
+                    })
+                );
+                players_are_moving.current = true;
+            }
+            else{
+                setFielders((prev) =>
+                    prev.map((f) => {
+                      if (!f.isSpecial) {
+                        const dx = f.x - f.tpx;
+                        const dy = f.y - f.tpy;
+                        const dist = Math.hypot(dx, dy);
+                  
+                        if (dist < 3) {
+                          return {
+                            ...f,
+                            vx: 0,
+                            vy: 0,
+                            x: f.tpx,
+                            y: f.tpy,
+                          };
+                        }
+                  
+                        return {
+                          ...f,
+                          x: f.x + f.vx,
+                          y: f.y + f.vy,
+                        };
+                      }
+                      return f;
+                    })
+                  );
+                  
+            }
+
+
             setBall((prev)=>{
-                return {x: prev.x + velocity.x, y: prev.y + velocity.y, z: Math.max(0,prev.z + velocity.z)}
+                return {x: prev.x + velocityRef.current.x, y: prev.y + velocityRef.current.y, z: Math.max(0,prev.z + velocityRef.current.z)}
             })
 
-            if(ball.z > 0) setvelocity(prev=>({...prev, z: prev.z - g}))
-
+            if(ball.z > 0){
+                const v = velocityRef.current;
+                velocityRef.current = {...v, z: v.z - g}
+            }
             animationRef.current = requestAnimationFrame(animateBall);
         };
+ 
 
         animationRef.current = requestAnimationFrame(animateBall)
         return () => cancelAnimationFrame(animationRef.current);
-      },[velocity])
+      },[velocityRef.current])
       
       useEffect(()=>{
         const updatedFielders = fielders.map((f)=>{
@@ -162,29 +276,32 @@ export default function Component(){
                     const endTime = performance.now();
                     const time = (endTime - startTime.current)/1000;
 
-                    if(time < 5){
-                        alert('no runs')                       
+                    if(time < 3){
+                        ballEvent.current = 1;
+                        isAnimationDone.current = true;                     
                     }
-                    else if(time >= 5 && time < 10){
-                        alert('one run')
+                    else if(time >= 3 && time < 6){
+                        ballEvent.current = 2;
+                        isAnimationDone.current = true;
                     }
-                    else if(time >= 10){
-                        alert('two runs')
+                    else {
+                        ballEvent.current = 3;
+                        isAnimationDone.current = true;
                     }
                 }
                 if(ball.z !== 0 && !f.isSpecial){
                     cancelAnimationFrame(animationRef.current)
-                    alert('player is out');
+                    ballEvent.current = -1;
+                    isAnimationDone.current = true;
                 }
             }
 
 
             if (!f.isSpecial) {
-                const { direction } = intercept(f, ball, velocity, 0.25);
                 return {
                   ...f,
-                  x: f.x + direction.x,
-                  y: f.y + direction.y,
+                  x: f.x + f.vx,
+                  y: f.y + f.vy,
                   color: isHit ? 'yellow' : 'green'
                 };
               }
@@ -194,10 +311,12 @@ export default function Component(){
 
         if(isOutOfBounds(ball.x, ball.y)){
             if(ball.z>0){
-                alert('its a six');
+                ballEvent.current = 6;
+                isAnimationDone.current = true;
             }
             else{
-                alert('its a four');
+                ballEvent.current = 4;
+                isAnimationDone.current = true;
             }
             cancelAnimationFrame(animationRef.current)
 
@@ -266,6 +385,21 @@ export default function Component(){
                     fill='black'
                     draggable
                     onDragMove={(e)=> setBall({x :e.target.x(), y: e.target.y()})}
+                    />
+
+                <Circle
+                    x={Tpoint.current.x }
+                    y={Tpoint.current.y }
+                    radius={ballRadius}
+                    stroke='white'
+                    fill='black'
+                    />
+                <Circle
+                    x={Lpoint.current.x }
+                    y={Lpoint.current.y }
+                    radius={ballRadius}
+                    stroke='white'
+                    fill='black'
                     />
                 </Layer>
             </Stage>

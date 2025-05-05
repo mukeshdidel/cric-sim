@@ -27,6 +27,11 @@ export default function Match(){
     const [team2Players, setTeam2Players] = useState([]);
     const [score , setScore] = useState({ totalRuns: 0, totalWickets: 0, totalBalls: 0, isFirstInning: true, target: 0 });
 
+
+    const ballEvent = useRef(null);
+
+    const isAnimationDone = useRef(true);
+
     const [matchSpeed, setMatchSpeed] = useState(0);
     const matchSpeedRef = useRef(matchSpeed);
     useEffect(() => {
@@ -116,10 +121,11 @@ export default function Match(){
 
     async function handleStartClick(){
 
+        setBallData(1);
         setIsMatchStarted(true);
 
         const [newTeam1Players,newTeam2Players,firstScore] = await SimInning
-        (team1Players, team2Players, setTeam1Players, setTeam2Players, score, setScore, matchSpeedRef);
+        (team1Players, team2Players, setTeam1Players, setTeam2Players, score, setScore, matchSpeedRef, setBallData, isAnimationDone,ballEvent);
         
         const newScore = {
             ...firstScore, 
@@ -130,7 +136,7 @@ export default function Match(){
 
 
         const [finalTeam2Players,finalTeam1Players,finalScore] = await SimInning
-        (newTeam2Players, newTeam1Players ,setTeam2Players, setTeam1Players,{...newScore,target: newScore.totalRuns + 1, isFirstInning:false}, setScore,matchSpeedRef);
+        (newTeam2Players, newTeam1Players ,setTeam2Players, setTeam1Players,{...newScore,target: newScore.totalRuns + 1, isFirstInning:false}, setScore,matchSpeedRef, setBallData, isAnimationDone, ballEvent);
 
 
         setTeam1Players(finalTeam1Players);
@@ -171,6 +177,8 @@ export default function Match(){
 
       };
 
+      const [ballData, setBallData] = useState(null);
+
     return (
         <>
             <div className='match-div'>
@@ -195,10 +203,11 @@ export default function Match(){
                     </div>
                     
                     <h3>Scorecard</h3>
-                    <matchContext.Provider value={{team1Players, team2Players, matchSpeedRef, score}}>
+                    <matchContext.Provider value={{team1Players, team2Players, matchSpeedRef, score, isAnimationDone, ballEvent}}>
                         <Score />  
                         <div className='match-scorecard'>
-                        <Ground />
+{/*                         {ballData && <Ground key={ballData} /> } */}
+                        <Ground/>
                         <ScoreCard />
                         </div>
                     </matchContext.Provider>
