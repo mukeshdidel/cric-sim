@@ -8,6 +8,7 @@ export default function Score(){
     if(score.isFirstInning === true){
         ScoreComponent = (
         <>
+        
             <p className="runs-p">{score.totalRuns}-{score.totalWickets}</p>
             <p>{Math.floor(score.totalBalls/6)}.{score.totalBalls%6}</p>
             <div>

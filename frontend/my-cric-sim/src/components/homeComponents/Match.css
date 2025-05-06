@@ -30,10 +30,13 @@
 }
 
 .match-score{
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    z-index: 999;
     background-color: rgb(52, 51, 51);
     padding: 10px;
     border-radius: 25px;
-    margin: 20px;
     height: 70px;
     width: 50%;
     color: whitesmoke;

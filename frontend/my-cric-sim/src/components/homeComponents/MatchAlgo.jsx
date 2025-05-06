@@ -4,7 +4,7 @@ const waitFor = async (conditionFn, checkInterval = 50) => {
     }
   };
 
- export default async function SimInning(battingTeam,bowlingTeam,setBattingTeamPlayers,setbowlingTeamPlayers, score , setScore, matchSpeedRef, setBallData, isAnimationDone , ballEvent) {
+ export default async function SimInning(battingTeam,bowlingTeam,setBattingTeamPlayers,setbowlingTeamPlayers, score , setScore, matchSpeedRef, setBallData, isAnimationDone , ballEvent, setBallCalc) {
 
 
     
@@ -59,22 +59,18 @@ const waitFor = async (conditionFn, checkInterval = 50) => {
         for(let j = 0 ; j<6;j++){
             
 
-            setBallData(Date.now())
+
             setScore(newScore);
-
-            await waitFor(() => isAnimationDone.current === true);
-            isAnimationDone.current = false;
-
 
             battingTeam[s].batStatus = 1;
             battingTeam[ns].batStatus = 2;
             setBattingTeamPlayers(battingTeam);
             
 
-            let x;
-/*             do{
-                x = BallEventCalculator(battingTeam[s],bowlingTeam[b])  // a random number for next ball event
-                if(x===5){ // 5 for wide
+            let Xevent;
+            do{
+                Xevent = BallEventCalculator(setBallCalc, battingTeam[s], bowlingTeam[b])
+                if(Xevent === 'wide'){ 
                     totalRuns++;
                     bowlingTeam[b] ={
                         ...bowlingTeam[b],
@@ -82,10 +78,22 @@ const waitFor = async (conditionFn, checkInterval = 50) => {
                         extras : bowlingTeam[b].extras + 1
                     }
                     setbowlingTeamPlayers(bowlingTeam); 
-                }   
-            }while(x===5); */
+                }
+            }while(Xevent === 'wide');
+            
+            
 
-            x = ballEvent.current
+            let x;
+            if(Xevent !== 'out'){
+                setBallData(Date.now())
+                await waitFor(() => isAnimationDone.current === true);
+                isAnimationDone.current = false;
+                x = ballEvent.current
+            }
+            else{
+                x = - 1
+            }
+
 
             if(x===0 || x===1|| x===2|| x===3 || x===4 || x===6){
                 totalRuns += x;                
@@ -198,8 +206,7 @@ const waitFor = async (conditionFn, checkInterval = 50) => {
 
 function selectBaller(bowlingTeam, prevBowler, oversDone, noOfbowlers){
     let bowlers = [];
-
-
+    
     for(let i = 0 ; i< bowlingTeam.length ; i++){
 
         if(noOfbowlers === 5 && (4-bowlingTeam[i].overs) > (20 - oversDone)/2 && i!=prevBowler && bowlingTeam[i].overs < 4 && bowlingTeam[i].bowl_rating >= 60 ){
@@ -211,83 +218,66 @@ function selectBaller(bowlingTeam, prevBowler, oversDone, noOfbowlers){
         if(bowlingTeam[i].bowl_rating >= 60 && bowlingTeam[i].overs < 4 && i!= prevBowler){
             bowlers.push(i);
         }
+    
     }   
-   
-
-
-
+    
     let randomIndex = Math.floor(Math.random()*bowlers.length);
     return bowlers[randomIndex];
 }
 
-function BallEventCalculator(batsman,bowler){
-    const ratingDiff = batsman.bat_rating - bowler.bowl_rating
+function BallEventCalculator(setBallCalc, batsman, bowler){
 
 
 
-    let outcomes = [
-        {result: 0 , weight: 35},
-        {result: 1 , weight: 23},
-        {result: 2 , weight: 12},
-        {result: 3 , weight: 1},
-        {result: 4 , weight: 13},
-        {result: 5 , weight: 5}, // wide 
-        {result: 6 , weight: 8},
-        {result: 7 , weight: 5}, // out
-    ];
+    let power = batsman.power; let effPower = power/100;
+    let timing = batsman.timing;
+    let control = batsman.control;
+    let speed = bowler.speed;
+    let accuracy = bowler.accuracy;
 
-    outcomes = outcomes.map(outcome => {
-        let newWeight = outcome.weight;
-
-        if(ratingDiff > 0){
-            if(outcome.result === 7)
-                newWeight -= Math.sqrt(ratingDiff)*0.8;
-            if(outcome.result === 4 || outcomes.result===6)
-                newWeight += Math.sqrt(ratingDiff)*1.2;
-        }
-        else{
-            if(outcome.result === 4 || outcome.result===6)
-                newWeight -= Math.sqrt(-ratingDiff)*1.5;
-        }
-    
-        switch (batsman.bat_style) {
-            case "aggressive":
-                if (outcome.result === 7) newWeight += 3;
-                if (outcome.result === 4) newWeight += 2;
-                if (outcome.result === 6) newWeight += 4;
-                if (outcome.result === 1) newWeight -= 5;
-                if (outcome.result === 2) newWeight -= 2;
-                break;
-      
-            case "defensive":
-                if (outcome.result === 7) newWeight -= 2;
-                if (outcome.result === 6 ) newWeight -= 4;
-                if (outcome.result === 4) newWeight -= 6;
-                if (outcome.result === 1) newWeight += 4;
-                if (outcome.result === 2) newWeight += 3;
-                break;
-        }
-
-        if(newWeight < 0)
-            newWeight = 0;
-
-        return {...outcome, weight: newWeight}
-
-    });
-
-    let totalWeight = 0;
-    
-    outcomes.forEach(outcome => {
-        totalWeight += outcome.weight;
-    });
-
-    const random = Math.random()*totalWeight;
-
-    let event = 0;
-
-    for(let outcome of outcomes){
-        event += outcome.weight;
-        if(random<= event)
-            return outcome.result;
+    if(Math.random()*accuracy < 5){
+        return 'wide';
     }
+    let velocity = Math.random()*0.8 + 1 + effPower*1.2 
+    const timingDiff = Math.random()*timing - Math.random()*speed;
+    if(timingDiff < -70){
+        return 'out'
+    }
+    let timingPenalty = (Math.random()*(100-timing) + 0.3*Math.random()*speed)/100;
+    velocity = velocity - timingPenalty;
+
+    const baseAngle = Math.PI / 4; // 45°
+    const maxNegDeviation = 25 * Math.PI / 180; // -25
+    const maxPosDeviation = 35 * Math.PI / 180; // +35
+
+    let deviation;
+    if (timingPenalty < 0.5) {
+
+        deviation = -Math.random() * maxNegDeviation * (timingPenalty * 2); // from 0 to -25
+    } else {
+
+        deviation = Math.random() * maxPosDeviation * ((timingPenalty - 0.5) * 2); // from 0 to +35
+    }
+
+    let VAngle = 0.00001;
+    if(batsman.bat_style = 'aggressive'){
+        Math.random() <= 0.334 ? VAngle = baseAngle + deviation : VAngle = 0.000001;    
+    }
+    else if(batsman.bat_style = 'balanced'){
+        Math.random() <= 0.1667 ? VAngle = baseAngle + deviation : VAngle = 0.000001;         
+    }
+    else if(batsman.bat_style = 'balanced'){
+        Math.random() <= 0.0667 ? VAngle = baseAngle + deviation : VAngle = 0.000001;       
+    }
+
+
+/* 
+    // edge cases
+    const clampedVAngle = Math.max(5 * Math.PI / 180, Math.min(VAngle, 80 * Math.PI / 180)); */
+
+
+    setBallCalc({ velocity: velocity, VAngle: VAngle });
+
+
+
 }

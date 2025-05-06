@@ -30,7 +30,7 @@ export default function Match(){
 
     const ballEvent = useRef(null);
 
-    const isAnimationDone = useRef(true);
+    const isAnimationDone = useRef(false);
 
     const [matchSpeed, setMatchSpeed] = useState(0);
     const matchSpeedRef = useRef(matchSpeed);
@@ -125,7 +125,7 @@ export default function Match(){
         setIsMatchStarted(true);
 
         const [newTeam1Players,newTeam2Players,firstScore] = await SimInning
-        (team1Players, team2Players, setTeam1Players, setTeam2Players, score, setScore, matchSpeedRef, setBallData, isAnimationDone,ballEvent);
+        (team1Players, team2Players, setTeam1Players, setTeam2Players, score, setScore, matchSpeedRef, setBallData, isAnimationDone,ballEvent, setBallCalc);
         
         const newScore = {
             ...firstScore, 
@@ -136,7 +136,7 @@ export default function Match(){
 
 
         const [finalTeam2Players,finalTeam1Players,finalScore] = await SimInning
-        (newTeam2Players, newTeam1Players ,setTeam2Players, setTeam1Players,{...newScore,target: newScore.totalRuns + 1, isFirstInning:false}, setScore,matchSpeedRef, setBallData, isAnimationDone, ballEvent);
+        (newTeam2Players, newTeam1Players ,setTeam2Players, setTeam1Players,{...newScore,target: newScore.totalRuns + 1, isFirstInning:false}, setScore,matchSpeedRef, setBallData, isAnimationDone, ballEvent, setBallCalc);
 
 
         setTeam1Players(finalTeam1Players);
@@ -178,6 +178,7 @@ export default function Match(){
       };
 
       const [ballData, setBallData] = useState(null);
+      const [ballCalc, setBallCalc] = useState({velocity: 0, VAngle: 0})
 
     return (
         <>
@@ -203,7 +204,7 @@ export default function Match(){
                     </div>
                     
                     <h3>Scorecard</h3>
-                    <matchContext.Provider value={{team1Players, team2Players, matchSpeedRef, score, isAnimationDone, ballEvent}}>
+                    <matchContext.Provider value={{team1Players, team2Players, matchSpeedRef, score, isAnimationDone, ballEvent, ballCalc}}>
                         <Score />  
                         <div className='match-scorecard'>
 {/*                         {ballData && <Ground key={ballData} /> } */}

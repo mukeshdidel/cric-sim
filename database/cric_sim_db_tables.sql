@@ -5,8 +5,10 @@ select * from player_stat;
 select * from league_table;
 select * from schedule;
 select * from teams;
+select * from players where power is null or timing is null or control is null or speed is null  or accuracy is null ;
 
-select * from players where team_id =9 ;
+alter table players add power int , add timing int , add control int , add speed int , add accuracy int;
+
 
 SELECT p.player_id, p.player_name, p.type, p.team_id, ps.mvp_points
 FROM player_stat ps JOIN  players p ON ps.player_id = p.player_id JOIN teams t ON p.team_id = t.team_id 
@@ -159,7 +161,7 @@ insert into players (player_name, team_id, bat_style, bat_posi, bat_rating, bowl
 																														( 'Matheesha Pathirana',1,'defensive','lowerorder',46,'fast',85,'bowler');
 insert into players (player_name, team_id, bat_style, bat_posi, bat_rating, bowl_style, bowl_rating, type) values ( 'Yashasvi Jaiswal',2,'aggressive','opener',84,'none',43,'batsman'),
 																														( 'Sanju Samson',2,'aggressive','top order',87,'none',21,'batsman'),
-																														( 'Nitish Rana',2,'balanced','top order',76,'spin',49,'batsman'),
+																														( 'Nitish Rana',9,'balanced','top order',76,'spin',49,'batsman'),
 																														( 'Riyan Parag',2,'aggressive','middleorder',78,'spin',54,'batsman'),
 																														( 'Dhruv Jurel',2,'aggressive','finisher',74,'none',21,'batsman'),
 																														( 'Shimron Hetmyer',2,'aggressive','finisher',79,'none',21,'batsman'),
@@ -254,10 +256,10 @@ INSERT INTO players (player_name, team_id, bat_style, bat_posi, bat_rating, bowl
 
                                                                                         
                                                                                         
--- Team 9 (Rajasthan Royals)
+
 INSERT INTO players (player_name, team_id, bat_style, bat_posi, bat_rating, bowl_style, bowl_rating,type) VALUES
 ('Shubman Gill', 9, 'balanced', 'opener', 82, 'none', 21,'batsman'),
-('Jos Buttler', 9, 'aggressive', 'opener', 91, 'none', 21,'batsman'),
+('Jos Buttler', 2, 'aggressive', 'opener', 91, 'none', 21,'batsman'),
 ('Sai Sudharsan', 9, 'aggressive', 'top order', 78, 'none', 45,'batsman'),
 ('Washington Sundar', 9, 'balanced', 'middleorder', 72, 'spin', 69,'allrounder'),
 ('Mahipal Lomror', 9, 'balanced', 'middleorder', 67, 'none', 45,'batsman'),

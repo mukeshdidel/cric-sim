@@ -51,7 +51,7 @@ function intercept(player, ball, ballVel,ivZ, playerSpeed) {
 
     let landingPoint = null;
     if (vz.current > 0) {
-        const g = 0.013;
+        const g = 0.0132;
         const a = -0.5 * g;
         const b = vz.current;
         const c = ball.z; // current z-position of the ball
@@ -107,11 +107,11 @@ function intercept(player, ball, ballVel,ivZ, playerSpeed) {
 
 export default function Ground(){
 
-    const { isAnimationDone, ballEvent } = useContext(matchContext);
+    const { isAnimationDone, ballEvent, ballCalc } = useContext(matchContext);
 
-    const [fielders, setFielders] = useState(() => {
+/*     const [fielders, setFielders] = useState(() => {
 
-        const circleFielders = Array.from({ length: 9 }, (_, i) => {
+        const circleFielders = Array.from({ length: 1 }, (_, i) => {
           
             if(i=== 10){
                 return{
@@ -156,7 +156,85 @@ export default function Ground(){
         });
     
         return circleFielders;
-      });
+      }); */
+
+      const [fielders, setFielders] = useState(()=>{
+        const allFielders = [
+/*             {
+                id: 1, x: 490, y: 675 // long on
+            }, */
+            {
+                id: 2, x: 615, y: 580 // cow corner
+            },
+/*             {
+                id: 3, x: 685, y: 450 // deep mid wicket 
+            }, */
+/*             {
+                id: 4, x: 685, y: 290 // deep mid square
+            }, */
+/*             {
+                id: 5, x: 615, y: 160 // long leg
+            },
+            {
+                id: 6, x: 490, y: 65 // deep fine leg
+            }, */
+/*             {
+                id: 7, x: 250, y: 675 // long off
+            }, */
+            {
+                id: 8, x: 125, y: 580 // deep extra cover
+            },
+/*             {
+                id: 9, x: 55, y: 450 // deep cover
+            },
+            {
+                id: 10, x: 55, y: 290 // deep point 
+            }, */
+/*             {
+                id: 11, x: 125, y: 160 // deep backword point 
+            },
+            {
+                id: 12, x: 250, y: 65 // third man
+            }, */
+            {
+                id: 13, x: 435, y: 515 // mid on
+            },
+/*             {
+                id: 14, x: 485, y: 440 // extra mid wicket or cow
+            }, */
+            {
+                id: 15, x: 490, y: 370 // mid wicket
+            },
+            {
+                id: 16, x: 490, y: 310 // square leg
+            },
+            {
+                id: 17, x: 470, y: 255 // backword square leg
+            },
+/*             {
+                id: 18, x: 420, y: 210 // fine leg
+            }, */
+/*             {
+                id: 19, x: 305, y: 515 // mid off
+            }, */
+/*             {
+                id: 20, x: 255, y: 440 // extra cover
+            }, */
+            {
+                id: 21, x: 250, y: 370 // cover
+            },
+            {
+                id: 22, x: 250, y: 310 // point
+            },
+            {
+                id: 23, x: 270, y: 255 // backword point
+            },
+            {
+                id: 24, x: 320, y: 210 // fly slip 
+            },
+        ]
+        return allFielders
+      })
 
       const Tpoint = useRef({ x: 370 , y: 370})
       const Lpoint = useRef({ x: 370 , y: 370 + 48})
@@ -167,7 +245,7 @@ export default function Ground(){
       const velocityRef = useRef({x: 0, y:0, z:0});
       const [ballRadius, setBallRadius] =useState(5)
 
-      const g = 0.013;
+/*       const g = 0.0132;
       const startTime = useRef();
       const initialVelocityZRef = useRef(0);
 
@@ -176,14 +254,16 @@ export default function Ground(){
      
 
       useEffect(()=>{
-        const velo = Math.random()*3;
-        const angle = Math.random() * 2 *Math.PI;
-        const vx = Math.cos(angle)*velo;
-        const vy = Math.sin(angle)*velo;
-        const vz = Math.random()*0.0002;
+
+        const velo = ballCalc?.velocity;
+        const HAngle = Math.random() * 2 *Math.PI;
+        const VAngle = ballCalc?.VAngle;  
+
+        const vx = Math.cos(VAngle)*Math.cos(HAngle)*velo;
+        const vy = Math.cos(VAngle)*Math.sin(HAngle)*velo;
+        const vz = Math.sin(VAngle)*velo
+
         startTime.current = performance.now()
-
-
         velocityRef.current = {x: vx, y: vy, z: vz};
         initialVelocityZRef.current = vz;
 
@@ -196,7 +276,7 @@ export default function Ground(){
                 setFielders(prev =>
                     prev.map(f => {
                         if (!f.isSpecial) {
-                            const { direction, target, landingPoint } = intercept(f, ball, velocityRef.current, initialVelocityZRef, 0.5);
+                            const { direction, target, landingPoint } = intercept(f, ball, velocityRef.current, initialVelocityZRef, 0.6);
                             if(target){
                                 Tpoint.current = {x: target.x, y: target.y};
                             }
@@ -206,8 +286,8 @@ export default function Ground(){
 
                             return {
                                 ...f,
-                                vx: direction.x*0.25,
-                                vy: direction.y*0.25,
+                                vx: direction.x*0.3,
+                                vy: direction.y*0.3,
                                 tpx: target.x,
                                 tpy: target.y,
                             };
@@ -322,7 +402,7 @@ export default function Ground(){
 
         }
         setFielders(updatedFielders);
-      },[ball])
+      },[ball]) */
   
     return (
         <>                    
@@ -371,11 +451,14 @@ export default function Ground(){
                             x={f.x}
                             y={f.y}
                             radius={5}
-                            fill={f.color}
+                            /* fill={f.color} */
+                            fill = 'green'
                             stroke='black'
                         />
+
                     ))
                 }
+
 
                 <Circle
                     x={ball.x}
@@ -385,21 +468,6 @@ export default function Ground(){
                     fill='black'
                     draggable
                     onDragMove={(e)=> setBall({x :e.target.x(), y: e.target.y()})}
-                    />
-
-                <Circle
-                    x={Tpoint.current.x }
-                    y={Tpoint.current.y }
-                    radius={ballRadius}
-                    stroke='white'
-                    fill='black'
-                    />
-                <Circle
-                    x={Lpoint.current.x }
-                    y={Lpoint.current.y }
-                    radius={ballRadius}
-                    stroke='white'
-                    fill='black'
                     />
                 </Layer>
             </Stage>
