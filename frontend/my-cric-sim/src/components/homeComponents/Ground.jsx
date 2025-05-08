@@ -81,14 +81,14 @@ function intercept(player, ball, ballVel,ivZ, playerSpeed) {
     if(!(interceptPoint &&  Math.hypot(370 - interceptPoint.x, 370-interceptPoint.y ) < 340 )) {
         const t = 340 / Math.hypot(ballVel.x, ballVel.y);
         const x = 370 + ballVel.x * t 
-        const y = 370 + ballVel.y * t 
+        const y = 370  + ballVel.y * t 
         interceptPoint ={x: x, y: y};
         target = interceptPoint;
     }
     if(Math.hypot(370 - landingPoint.x, 370 - landingPoint.y) > 340 ){
         const t = 340 / Math.hypot(ballVel.x, ballVel.y);
         const x = 370 + ballVel.x * t 
-        const y = 370 + ballVel.y * t 
+        const y = 370  + ballVel.y * t 
         landingPoint ={x: x, y: y};
         target = landingPoint;       
     }
@@ -161,143 +161,7 @@ export default function Ground(){
         return Fielders;
       });
 
-/*       const [fielders, setFielders] = useState(()=>{
-        const allFielders = [
-            {
-                id: 1, x: 490, y: 675 // long on
-            },
-            {
-                id: 25, x: 560, y: 635 // fly slip 
-            },
-            {
-                id: 2, x: 615, y: 580 // cow corner
-            },
-            {
-                id: 26, x: 660, y: 520 // fly slip 
-            },
-            {
-                id: 3, x: 685, y: 450 // deep mid wicket 
-            },
-            {
-                id: 27, x: 700, y: 370 // fly slip 
-            },
-            {
-                id: 4, x: 685, y: 290 // deep mid square
-            },
-            {
-                id: 28, x: 660, y: 220 // fly slip 
-            },
-            {
-                id: 5, x: 615, y: 160 // long leg
-            },
-            {
-                id: 29, x: 560, y: 110 // fly slip 
-            },
-            {
-                id: 6, x: 490, y: 65 // deep fine leg
-            },
-            {
-                id: 12, x: 250, y: 65 // third man
-            },
-            {
-                id: 34, x: 180, y: 110 // fly slip 
-            },
-            {
-                id: 11, x: 125, y: 160 // deep backword point 
-            },
-            {
-                id: 33, x: 80, y: 220 // fly slip 
-            },
-            {
-                id: 10, x: 55, y: 290 // deep point 
-            },
-            {
-                id: 32, x: 40, y: 370 // fly slip 
-            },
-            {
-                id: 9, x: 55, y: 450 // deep cover
-            },
-            {
-                id: 31, x: 80, y: 520 // fly slip 
-            },
-            {
-                id: 8, x: 125, y: 580 // deep extra cover
-            },
-            {
-                id: 30, x: 180, y: 635 // fly slip 
-            },
-            {
-                id: 7, x: 250, y: 675 // long off
-            },
-            {
-                id: 13, x: 435, y: 515 // mid on
-            },
-            {
-                id: 35, x: 465, y: 480 // fly slip 
-            },
-            {
-                id: 14, x: 485, y: 440 // extra mid wicket
-            },
-            {
-                id: 36, x: 490, y: 405 // fly slip 
-            },
-            {
-                id: 15, x: 490, y: 370 // mid wicket
-            },
-            {
-                id: 37, x: 490, y: 340 // fly slip 
-            },
-            {
-                id: 16, x: 490, y: 310 // square leg
-            },
-            {
-                id: 38, x: 480, y: 280 // fly slip 
-            },
-            {
-                id: 17, x: 470, y: 255 // backword square leg
-            },
-            {
-                id: 39, x: 450, y: 230 // fly slip 
-            },
-            {
-                id: 18, x: 420, y: 210 // fine leg
-            },
-            {
-                id: 24, x: 320, y: 210 // fly slip 
-            },
-            {
-                id: 44, x: 290, y: 230 // fly slip 
-            },
-            {
-                id: 23, x: 270, y: 255 // backword point
-            },
-            {
-                id: 43, x: 260, y: 280 // fly slip 
-            },
-            {
-                id: 22, x: 250, y: 310 // point
-            },
-            {
-                id: 42, x: 250, y: 340 // fly slip 
-            },
-            {
-                id: 21, x: 250, y: 370 // cover
-            },
-            {
-                id: 41, x: 250, y: 405 // fly slip 
-            },
-            {
-                id: 20, x: 255, y: 440 // extra cover
-            },            
-            {
-                id: 40, x: 270, y: 480 // fly slip 
-            },
-            {
-                id: 19, x: 305, y: 515 // mid off
-            },
-        ]
-        return allFielders
-      }) */
+
 
       const Tpoint = useRef({ x: 370 , y: 370})
       const Lpoint = useRef({ x: 370 , y: 370 + 48})
@@ -419,15 +283,19 @@ export default function Ground(){
                     const endTime = performance.now();
                     const time = (endTime - startTime.current)/1000;
 
-                    if(time < 3){
-                        ballEvent.current = 1;
+                    if(time < 1){
+                        ballEvent.current = 0;
                         isAnimationDone.current = true;                     
                     }
-                    else if(time >= 3 && time < 6){
+                    else if(time >= 1 && time < 3){
+                        ballEvent.current = 1;
+                        isAnimationDone.current = true;
+                    }
+                    else if(time >= 3 && time < 5){
                         ballEvent.current = 2;
                         isAnimationDone.current = true;
                     }
-                    else {
+                    else{
                         ballEvent.current = 3;
                         isAnimationDone.current = true;
                     }

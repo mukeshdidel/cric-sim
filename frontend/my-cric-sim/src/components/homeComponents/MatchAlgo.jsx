@@ -16,7 +16,7 @@ const waitFor = async (conditionFn, checkInterval = 50) => {
     let totalRuns = 0;
     let totalWickets = 0;
     let totalBalls = 1;
-    let ballsSinceLastWicket = 0;
+    let ballsSinceLastWicket = 7;
 
 
 
@@ -32,7 +32,8 @@ const waitFor = async (conditionFn, checkInterval = 50) => {
         batsMan2: battingTeam[ns],
         bowler: bowlingTeam[b],
         batsMan1Runs: 0,
-        batsMan2Runs: 0
+        batsMan2Runs: 0,
+        thisOver: []
     };
 
     let noOfbowlers = 0;
@@ -55,6 +56,21 @@ const waitFor = async (conditionFn, checkInterval = 50) => {
             overs: bowlingTeam[b].overs + 1,
         }
 
+        if(i !== 0){
+            [s,ns] = [ns,s]
+            newScore = {
+                ...newScore,
+                totalBalls: totalBalls,
+                totalRuns: totalRuns,
+                totalWickets: totalWickets,
+                batsMan1: battingTeam[s],
+                batsMan2: battingTeam[ns],
+                bowler: bowlingTeam[b],
+                thisOver : []
+            }
+            setScore(newScore); 
+        }
+
         
         for(let j = 0 ; j<6;j++){
             
@@ -68,7 +84,7 @@ const waitFor = async (conditionFn, checkInterval = 50) => {
 
             let Xevent;
             do{
-                Xevent = BallEventCalculator(setBallCalc, battingTeam[s], bowlingTeam[b], gaps, ballsSinceLastWicket, score)
+                Xevent = BallEventCalculator(setBallCalc, battingTeam[s], bowlingTeam[b], gaps, ballsSinceLastWicket, newScore)
                 if(Xevent === 'wide'){ 
                     totalRuns++;
                     bowlingTeam[b] ={
@@ -133,6 +149,18 @@ const waitFor = async (conditionFn, checkInterval = 50) => {
                     [s,ns] = [ns,s]
                 }
 
+                newScore = {
+                    ...newScore,
+                    totalBalls: totalBalls,
+                    totalRuns: totalRuns,
+                    totalWickets: totalWickets,
+                    batsMan1: battingTeam[s],
+                    batsMan2: battingTeam[ns],
+                    bowler: bowlingTeam[b],
+                    thisOver: [...newScore.thisOver, `${x}`]
+                }
+                setScore(newScore); 
+
                 if(score.isFirstInning === false && totalRuns>= newScore.target){
                     newScore = {
                         ...newScore,
@@ -141,13 +169,15 @@ const waitFor = async (conditionFn, checkInterval = 50) => {
                         totalBalls: totalBalls,
                         batsMan1: battingTeam[s],
                         batsMan2: battingTeam[ns],
-                        bowler: bowlingTeam[b]
+                        bowler: bowlingTeam[b],
+                        thisOver: [...newScore.thisOver, `${x}`]
                     }
                     setScore(newScore);
                     setBattingTeamPlayers(battingTeam);
                     setbowlingTeamPlayers(bowlingTeam); 
                     return [battingTeam, bowlingTeam, newScore] ;
                 }
+
             }
             else if(x===-1){
                 battingTeam[s] = { 
@@ -164,6 +194,8 @@ const waitFor = async (conditionFn, checkInterval = 50) => {
                 
                 totalWickets++;
                 totalBalls = 6*i + (j+1);
+
+
                 newScore = {
                     ...newScore,
                     totalRuns: totalRuns,
@@ -171,8 +203,10 @@ const waitFor = async (conditionFn, checkInterval = 50) => {
                     totalBalls: totalBalls,
                     batsMan1: battingTeam[s],
                     batsMan2: battingTeam[ns],
-                    bowler: bowlingTeam[b]
+                    bowler: bowlingTeam[b],
+                    thisOver : [...newScore.thisOver, 'W']
                 }
+
                     
                 setScore(newScore);                            
                     
@@ -198,9 +232,10 @@ const waitFor = async (conditionFn, checkInterval = 50) => {
                 totalWickets: totalWickets,
                 batsMan1: battingTeam[s],
                 batsMan2: battingTeam[ns],
-                bowler: bowlingTeam[b]
+                bowler: bowlingTeam[b],
             }
             setScore(newScore); 
+            console.log(newScore)
             await sleep();
         }
 
@@ -283,7 +318,7 @@ function BallEventCalculator(setBallCalc, batsman, bowler, gaps, ballsSinceLastW
     let accuracy = bowler.accuracy;
 
     if(Math.random()*(timing + control) % 10 < 1 ){
-        if(Math.random()*accuracy > 60) 
+        if(Math.random()*accuracy > 70) 
         {
             return 'out';
         }
@@ -308,7 +343,7 @@ function BallEventCalculator(setBallCalc, batsman, bowler, gaps, ballsSinceLastW
     let velocity;
     let rand = Math.random();
     let skew = Math.pow(rand, 1-power/100);
-    velocity = skew * 3.4;
+    velocity = skew * 3.6;
 
     rand = Math.random();
     skew = Math.pow(rand, timing/ 100)* 0.5;
@@ -321,22 +356,23 @@ function BallEventCalculator(setBallCalc, batsman, bowler, gaps, ballsSinceLastW
     velocity = velocity >= 0.5 ? velocity : 0.5;
 
 
+    // vertical angle
+
     const baseAngle = Math.PI / 4; // 45°
     const maxNegDeviation = 25 * Math.PI / 180; // -25
     const maxPosDeviation = 35 * Math.PI / 180; // +35
 
-    let skill = (control + timing) / 2;
+    let skillCT = (control + timing) / 2;
     rand = Math.random();
     skew = 2 * (rand - 0.5); // -1 to +1
-    let deviationFactor = (100 - skill) / 100;
+    let deviationFactor = (100 - skillCT) / 100;
     
     let deviation = skew * (skew < 0 ? maxNegDeviation : maxPosDeviation) * deviationFactor;
     
 
-    let VAngle = 0.00001;
+    let VAngle;
     let prob = 0;
 
-    console.log(batsman, bowler, score);
     if(batsman.balls_f >= 10){
         prob += 0.5
     }
@@ -346,7 +382,7 @@ function BallEventCalculator(setBallCalc, batsman, bowler, gaps, ballsSinceLastW
     else if(batsman.bat_style = 'balanced'){
         prob += 0.83       
     }
-    else if(batsman.bat_style = 'defensive'){
+    else{
         prob += 0.45      
     }
 
@@ -358,25 +394,41 @@ function BallEventCalculator(setBallCalc, batsman, bowler, gaps, ballsSinceLastW
     if(!score.isFirstInning){
         const reqRunRate = (score.target - score.totalruns)/((120 - score.totalBalls)/6);
         if(reqRunRate >= 12){
-            prob += (reqRunRate / 6) - 1.5;
+            prob += (reqRunRate / 6) - 0.5;
         }
     }
 
-    const oversLeft = (120 - score.balls)/6;
+    if(score.isFirstInning && score.totalBalls > 24 && ballsSinceLastWicket > 6){
+        const runRate = (score.totalRuns / (score.totalBalls/6))
+        if(runRate < 5){
+            prob += 2
+        }
+        else if(runRate >= 5 && runRate < 7){
+            prob += 1.5
+        }
+        else if(runRate >= 7 && runRate < 8.5)
+        {
+            prob += 0.5
+        }
+        else{
+            prob += 0
+        }
+
+    }
+    const oversLeft = (120 - score.totalBalls)/6;
     if(oversLeft > 5 ){
         prob += 0;
     }
     else if(oversLeft > 2 && oversLeft < 5){
-        prob += 1.5;
+        prob += 2;
     }
     else{
-        prob += 3.5;
+        prob += 3;
     }
 
     prob = prob/10;
-    console.log(prob);
 
-    if(Math.random() < (prob/10)){
+    if(Math.random() < prob){
         VAngle = baseAngle - deviation
     }
     else{
@@ -384,9 +436,19 @@ function BallEventCalculator(setBallCalc, batsman, bowler, gaps, ballsSinceLastW
     }
 
 
-
+    // horizontal angle 
+    
     const r = Math.floor(Math.random()* gaps.length);
-    const HAngle = gaps[r]?.center;
+    const gapAngle = gaps[r]?.center;
+
+    const maxDeviation = 36 * Math.PI / 180;
+    let skillDiff = (movement - control + 100) / 200; 
+
+    let angleSkew = (Math.random() * 2 - 1);
+    deviation = angleSkew * maxDeviation * skillDiff;
+    const HAngle = gapAngle + deviation;
+    
+
 
     setBallCalc({ velocity: velocity, VAngle: VAngle, HAngle: HAngle });
 

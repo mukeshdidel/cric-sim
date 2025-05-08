@@ -9,8 +9,11 @@ export default function Score(){
         ScoreComponent = (
         <>
         
-            <p className="runs-p">{score.totalRuns}-{score.totalWickets}</p>
-            <p>{Math.floor(score.totalBalls/6)}.{score.totalBalls%6}</p>
+            <div>
+                <p className="runs-p">{score.totalRuns}-{score.totalWickets}</p>
+                <p>{Math.floor(score.totalBalls/6)}.{score.totalBalls%6}</p>            
+            </div>
+
             <div>
                 <p>{score?.batsMan1?.player_name || ""} {score?.batsMan1?.runs} - {score?.batsMan1?.balls_f}</p>
                 <p>{score?.batsMan2?.player_name || ""} {score?.batsMan2?.runs} - {score?.batsMan2?.balls_f}</p>
@@ -23,7 +26,17 @@ export default function Score(){
                     }
                 </p>
             </div>
-            
+            <div>
+                    <p>{score?.bowler?.player_name}</p>
+                    <div className='this-over'>
+                        <div>{score?.thisOver?.[0]}</div>
+                        <div>{score?.thisOver?.[1]}</div>
+                        <div>{score?.thisOver?.[2]}</div>
+                        <div>{score?.thisOver?.[3]}</div>
+                        <div>{score?.thisOver?.[4]}</div>
+                        <div>{score?.thisOver?.[5]}</div>
+                    </div>
+                </div>
         </>
         );
     }
@@ -31,17 +44,31 @@ export default function Score(){
 
         ScoreComponent = (
             <>
-                <p className="runs-p">{score.totalRuns}/{score.totalWickets}</p>
-                <p>{Math.floor(score.totalBalls/6)}.{score.totalBalls%6}</p>
+                <div>
+                    <p className="runs-p">{score.totalRuns}/{score.totalWickets}</p>
+                    <p>{Math.floor(score.totalBalls/6)}.{score.totalBalls%6}</p>  
+                </div>
+
                 <div className='score-batsman-div'>
                     <p>{score?.batsMan1?.player_name || ""} {score?.batsMan1?.runs} - {score?.batsMan1?.balls_f}</p>
                     <p>{score?.batsMan2?.player_name || ""} {score?.batsMan2?.runs} - {score?.batsMan2?.balls_f}</p>
                 </div>
                 <div>
-                    <p>need {score.target - score.totalRuns} from {120 - score.totalBalls} balls</p>
+                    <p>{score.target - score.totalRuns} <span>off {120 - score.totalBalls} </span></p>
                     <p>target: {score.target}</p> 
                 </div>
-                
+                <div>
+                    <p>{score?.bowler?.player_name}</p>
+                    <div className='this-over'>
+                        <div>{score?.thisOver?.[0]}</div>
+                        <div>{score?.thisOver?.[1]}</div>
+                        <div>{score?.thisOver?.[2]}</div>
+                        <div>{score?.thisOver?.[3]}</div>
+                        <div>{score?.thisOver?.[4]}</div>
+                        <div>{score?.thisOver?.[5]}</div>
+                    </div>
+                </div>
+
             </>
         );
     }
