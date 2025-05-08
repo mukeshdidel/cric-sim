@@ -22,6 +22,8 @@ export default function Match(){
     const [winningTeamId, setWinningTeamId] = useState(-1);
  
 
+    const [fields, setFields] = useState(null)
+    const [fieldIndex, setFieldIndex] = useState(0)
 
     const [team1Players, setTeam1Players] = useState([]);
     const [team2Players, setTeam2Players] = useState([]);
@@ -115,6 +117,19 @@ export default function Match(){
             setTeam2Players(team2Players);
         }
         fetchTeamData();
+
+        async function fetchFileds(){
+            const fetchedFields = await getFields();
+            const grouped = [];
+
+            fetchedFields.forEach(item => {
+              const index = item.field_no - 1;
+              if (!grouped[index]) grouped[index] = [];
+              grouped[index].push(item);
+            });
+            setFields(grouped);
+        }
+        fetchFileds();
    
     },[]);
 
@@ -125,7 +140,7 @@ export default function Match(){
         setIsMatchStarted(true);
 
         const [newTeam1Players,newTeam2Players,firstScore] = await SimInning
-        (team1Players, team2Players, setTeam1Players, setTeam2Players, score, setScore, matchSpeedRef, setBallData, isAnimationDone,ballEvent, setBallCalc);
+        (team1Players, team2Players, setTeam1Players, setTeam2Players, score, setScore, matchSpeedRef, setBallData, isAnimationDone,ballEvent, setBallCalc,setFieldIndex, fields);
         
         const newScore = {
             ...firstScore, 
@@ -134,9 +149,8 @@ export default function Match(){
         };
 
 
-
         const [finalTeam2Players,finalTeam1Players,finalScore] = await SimInning
-        (newTeam2Players, newTeam1Players ,setTeam2Players, setTeam1Players,{...newScore,target: newScore.totalRuns + 1, isFirstInning:false}, setScore,matchSpeedRef, setBallData, isAnimationDone, ballEvent, setBallCalc);
+        (newTeam2Players, newTeam1Players ,setTeam2Players, setTeam1Players,{...newScore,target: newScore.totalRuns + 1, isFirstInning:false}, setScore,matchSpeedRef, setBallData, isAnimationDone, ballEvent, setBallCalc,setFieldIndex, fields);
 
 
         setTeam1Players(finalTeam1Players);
@@ -204,11 +218,10 @@ export default function Match(){
                     </div>
                     
                     <h3>Scorecard</h3>
-                    <matchContext.Provider value={{team1Players, team2Players, matchSpeedRef, score, isAnimationDone, ballEvent, ballCalc}}>
+                    <matchContext.Provider value={{team1Players, team2Players, matchSpeedRef, score, isAnimationDone, ballEvent, ballCalc, fields , fieldIndex}}>
                         <Score />  
                         <div className='match-scorecard'>
-{/*                         {ballData && <Ground key={ballData} /> } */}
-                        <Ground/>
+                       {ballData && <Ground key={ballData} />}
                         <ScoreCard />
                         </div>
                     </matchContext.Provider>
@@ -230,9 +243,21 @@ async function getTeams(id) {
         });
         const data = await response.json();
         return data;
+
     }
     catch(error){
         console.error('Error fetching teams:', error);
+    }
+}
+
+async function getFields(){
+    try{   
+        const response = await fetch('http://localhost:5000/fields')
+        const data = await response.json();
+        return data;
+    }
+    catch(error){
+        console.log(error);
     }
 }
 

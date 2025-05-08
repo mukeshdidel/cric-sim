@@ -5,9 +5,13 @@ select * from player_stat;
 select * from league_table;
 select * from schedule;
 select * from teams;
-select * from players where power is null or timing is null or control is null or speed is null  or accuracy is null ;
 
-alter table players add power int , add timing int , add control int , add speed int , add accuracy int;
+select * from players where power is not null or timing is not null or control is not null or speed is not null or accuracy is not null;
+
+update players set power = 75, timing = 60, control = 55, bat_rating = 63, speed = 91, accuracy = 90, bowl_rating = 91  where player_id = 18;
+update players set power = 38, timing = 40, control = 39, bat_rating = 39, speed = 87, accuracy = 94, bowl_rating = 91  where player_id = 32;
+
+
 
 
 SELECT p.player_id, p.player_name, p.type, p.team_id, ps.mvp_points
@@ -37,7 +41,6 @@ create table teams(
 );
 
 
-
 CREATE TABLE players (
     player_id INT PRIMARY KEY AUTO_INCREMENT,
     player_name VARCHAR(50),
@@ -46,10 +49,14 @@ CREATE TABLE players (
     bat_style ENUM('aggressive', 'balanced', 'defensive'),
     bat_posi ENUM('opener', 'top order', 'middleorder', 'finisher', 'lowerorder'),
     bat_rating INT CHECK(bat_rating <= 100),
+    power int,
+    timing int ,
+    control int,
     
     bowl_style Enum('fast','spin','none'),
     bowl_rating INT CHECK(bowl_rating <= 100),
-    
+    accuracy int ,
+    movement int ,
     type Enum('batsman', 'bowler', 'allrounder'),
     
     FOREIGN KEY (team_id) REFERENCES teams(team_id)
@@ -134,6 +141,7 @@ create table league_table(
 );
 
 
+
 create table schedule(
 	match_id int primary key auto_increment,
 	team1_id int,
@@ -144,7 +152,30 @@ create table schedule(
 	foreign key(team2_id) references teams(team_id)
 );
 
+select * from fields join field_points on fields.point_no = field_points.point_no where field_no = 1;
 
+create table fields(field_no int , point_no int);
+insert into fields values (1,27),(1,32),(1,13),(1,14),(1,38),(1,18),(1,23),(1,20),(1,19),
+						 (2,27),(2,11),(2,13),(2,14),(2,38),(2,18),(2,22),(2,41),(2,19),
+                         (3,25),(3,7),(3,36),(3,16),(3,39),(3,23),(3,22),(3,21),(3,20),
+                         (4,25),(4,32),(4,36),(4,16),(4,39),(4,44),(4,43),(4,20),(4,19),
+                         (5,25),(5,5),(5,36),(5,16),(5,44),(5,43),(5,21),(5,20),(5,19),
+                         (6,1),(6,26),(6,28),(6,32),(6,7),(6,15),(6,39),(6,23),(6,20),
+                         (7,1),(7,26),(7,27),(7,28),(7,7),(7,39),(7,23),(7,42),(7,20),
+                         (8,1),(8,26),(8,27),(8,31),(8,7),(8,16),(8,39),(8,23),(8,42),
+                         (9,1),(9,26),(9,27),(9,28),(9,29),(9,23),(9,42),(9,20),(9,19),
+                         (10,1),(10,26),(10,12),(10,33),(10,32),(10,13),(10,14),(10,20),(10,19);
+
+ 
+create table field_points(point_no int primary key, x int , y int);
+insert into field_points values (1,490,675),(25,560,635),(2,615,580),(26,660,520),(3,685,450),(27,700,370),(4,685,290),(28,660,220),(5,615,160),(29,560,110),(6,490,65),
+								(12,250,65),(34,180,110),(11,125,160),(33,80,220),(10,55,290),(32,40,370),(9,55,450),(31,80,520),(8,125,580),(30,180,635),(7,250,675),
+                                (13,435,515),(35,465,480),(14,485,440),(36,490,405),(15,490,370),(37,490,340),(16,490,310),(38,480,280),(17,470,255),(39,450,230),(18,420,210),
+                                (24,320,210),(44,290,230),(23,270,255),(43,260,280),(22,250,310),(42,250,340),(21,250,370),(41,250,405),(20,255,440),(40,270,480),(19,305,515);
+select * from field_points;
+ 
+insert into fields values (1,),(1,),(1,),(1,),(1,),(1,),(1,),(1,),(1,);
+insert into fields values (2,),(2,),(2,),(2,),(2,),(2,),(2,),(2,),(2,);
 
 insert into teams (team_name) values ('Chennai Superkings'),('Rajasthan Royals'),('Mumbai Indians'),('Punjab Kings'),('Sunrisers Hydrabad'),('Kolkata Knight Riders'),('Delhi Captials'),('Lucknow Super Giants'),('Gujarat Titans'),('Royal Challengers Bengaluru');
 

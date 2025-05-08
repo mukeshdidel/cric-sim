@@ -228,4 +228,14 @@ async function getPlayersByTeam(team_id) {
     }
 }
 
-export {getTable,getPlayerStats,getTeams,insertMatches,exportMatches,truncateSchedule,exportMatch,getMatchPlayers,updateLeaueTable,updateSchedule,getSeasons,updatePlayerStats,insertLeague,getPlayers, draftPlayer, getPlayersByTeam};
+
+async function getFields(){
+    try{
+        const [response] = await pool.query(`select * from fields join field_points on fields.point_no = field_points.point_no;`);
+        return response;
+    }
+    catch(error){
+        console.log(error);
+    }
+}
+export {getTable,getPlayerStats,getTeams,insertMatches,exportMatches,truncateSchedule,exportMatch,getMatchPlayers,updateLeaueTable,updateSchedule,getSeasons,updatePlayerStats,insertLeague,getPlayers, draftPlayer, getPlayersByTeam, getFields};

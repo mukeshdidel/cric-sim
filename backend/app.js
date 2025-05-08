@@ -1,7 +1,7 @@
 
 import express from 'express';
 import cors from 'cors'
-import {getSeasons,getTable,getPlayerStats,getTeams,insertMatches,exportMatches,truncateSchedule,exportMatch,getMatchPlayers,updateLeaueTable,updateSchedule,updatePlayerStats,insertLeague,  getPlayers, draftPlayer, getPlayersByTeam} from './database.js'
+import {getSeasons,getTable,getPlayerStats,getTeams,insertMatches,exportMatches,truncateSchedule,exportMatch,getMatchPlayers,updateLeaueTable,updateSchedule,updatePlayerStats,insertLeague,  getPlayers, draftPlayer, getPlayersByTeam, getFields} from './database.js'
 
 const app = express();
 
@@ -214,6 +214,18 @@ app.get('/teams-info/:id', async (req, res) => {
         console.log(error);
         res.status(500).send('server error');
     }   
+
+})
+
+
+app.get('/fields', async (req, res) => {
+    try{
+        const fields = await getFields()
+        res.json(fields)
+    }
+    catch(error){
+        console.log(error);
+    }
 
 })
 

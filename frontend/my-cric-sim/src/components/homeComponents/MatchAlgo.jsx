@@ -4,10 +4,10 @@ const waitFor = async (conditionFn, checkInterval = 50) => {
     }
   };
 
- export default async function SimInning(battingTeam,bowlingTeam,setBattingTeamPlayers,setbowlingTeamPlayers, score , setScore, matchSpeedRef, setBallData, isAnimationDone , ballEvent, setBallCalc) {
+ export default async function SimInning(battingTeam,bowlingTeam,setBattingTeamPlayers,setbowlingTeamPlayers, score , setScore, matchSpeedRef, setBallData, isAnimationDone , ballEvent, setBallCalc , setFieldIndex, fields) {
 
 
-    
+    let gaps = [];
 
     let s = 0; // striker's index
     let ns = 1; // non strikers's index
@@ -16,6 +16,7 @@ const waitFor = async (conditionFn, checkInterval = 50) => {
     let totalRuns = 0;
     let totalWickets = 0;
     let totalBalls = 1;
+    let ballsSinceLastWicket = 0;
 
 
 
@@ -47,9 +48,8 @@ const waitFor = async (conditionFn, checkInterval = 50) => {
         await new Promise(resolve => setTimeout(resolve, speed*100)); 
     };
 
-
     for(let i =0 ; i<20;i++){
-        b = selectBaller(bowlingTeam , b, i, noOfbowlers); 
+        b = selectBaller(bowlingTeam , b, i, noOfbowlers, setFieldIndex, fields, gaps); 
         bowlingTeam[b]= {
             ...bowlingTeam[b],
             overs: bowlingTeam[b].overs + 1,
@@ -65,11 +65,10 @@ const waitFor = async (conditionFn, checkInterval = 50) => {
             battingTeam[s].batStatus = 1;
             battingTeam[ns].batStatus = 2;
             setBattingTeamPlayers(battingTeam);
-            
 
             let Xevent;
             do{
-                Xevent = BallEventCalculator(setBallCalc, battingTeam[s], bowlingTeam[b])
+                Xevent = BallEventCalculator(setBallCalc, battingTeam[s], bowlingTeam[b], gaps, ballsSinceLastWicket, score)
                 if(Xevent === 'wide'){ 
                     totalRuns++;
                     bowlingTeam[b] ={
@@ -92,6 +91,13 @@ const waitFor = async (conditionFn, checkInterval = 50) => {
             }
             else{
                 x = - 1
+            }
+
+            if(x === -1){
+                ballsSinceLastWicket = 0
+            }
+            else{
+                ballsSinceLastWicket++;
             }
 
 
@@ -204,7 +210,7 @@ const waitFor = async (conditionFn, checkInterval = 50) => {
 }
 
 
-function selectBaller(bowlingTeam, prevBowler, oversDone, noOfbowlers){
+function selectBaller(bowlingTeam, prevBowler, oversDone, noOfbowlers , setFieldIndex , fields, gaps){
     let bowlers = [];
     
     for(let i = 0 ; i< bowlingTeam.length ; i++){
@@ -222,62 +228,166 @@ function selectBaller(bowlingTeam, prevBowler, oversDone, noOfbowlers){
     }   
     
     let randomIndex = Math.floor(Math.random()*bowlers.length);
+    
+    
+    // selecting field
+    let fieldIndex;
+    if(oversDone < 6){
+        fieldIndex = Math.floor(Math.random()*5);
+        setFieldIndex(fieldIndex)
+    }
+    else{
+        fieldIndex = Math.floor(Math.random()*5) + 5;
+        setFieldIndex(fieldIndex)    
+    }
+
+    const center = {x: 370, y: 370 -48};
+
+    let field = fields[fieldIndex];
+
+    let angles = field.map((f) => {
+        let dx = f.x - center.x;
+        let dy = f.y - center.y;
+        let angle = Math.atan2(dy, dx);
+        //counterclockwise ------------> clockwise
+/*         angle = (2 * Math.PI - angle) % (2 * Math.PI); */
+        return angle;
+    })
+    angles.sort((a, b) => a - b);
+
+    gaps.length = 0;
+    let tempGaps = [];
+    for (let i = 0; i < angles.length; i++) {
+        let a1 = Number(angles[i].toFixed(2));
+        let a2 = Number(angles[(i + 1) % angles.length].toFixed(2));
+        if (a2 < a1) a2 += 2 * Math.PI;
+        let gap = Number((a2 - a1).toFixed(2));
+    /*     let centerAngle = (a1 + gap / 2) % (2 * Math.PI); */
+        let centerAngle = Number((((a1 + a2) / 2)%(2*Math.PI)).toFixed(2));
+
+        tempGaps.push({ from: a1, to: a2 % (2 * Math.PI), gap, center: centerAngle });
+    }
+
+    gaps.push(...tempGaps.filter(g => !(g.center >=-2.0952 && g.center <= -1.0476)));
+    
     return bowlers[randomIndex];
 }
 
-function BallEventCalculator(setBallCalc, batsman, bowler){
-
+function BallEventCalculator(setBallCalc, batsman, bowler, gaps, ballsSinceLastWicket, score){
 
 
     let power = batsman.power; let effPower = power/100;
     let timing = batsman.timing;
     let control = batsman.control;
-    let speed = bowler.speed;
+    let movement = bowler.movement;
     let accuracy = bowler.accuracy;
+
+    if(Math.random()*(timing + control) % 10 < 1 ){
+        if(Math.random()*accuracy > 60) 
+        {
+            return 'out';
+        }
+        else{
+            if(Math.random()*movement > 70 )
+            {
+                setBallCalc({ velocity: 2, VAngle: 0.1, HAngle: -Math.PI/2 });
+                return;
+            }
+            else{
+                setBallCalc({ velocity: 2, VAngle: 0.00001, HAngle: -Math.PI/2 });
+                return;                
+            }
+        }
+    }
 
     if(Math.random()*accuracy < 5){
         return 'wide';
     }
-    let velocity = Math.random()*0.8 + 1 + effPower*1.2 
-    const timingDiff = Math.random()*timing - Math.random()*speed;
-    if(timingDiff < -70){
-        return 'out'
-    }
-    let timingPenalty = (Math.random()*(100-timing) + 0.3*Math.random()*speed)/100;
-    velocity = velocity - timingPenalty;
+
+    // velocity calculation affected by power, timing and acccuracy
+    let velocity;
+    let rand = Math.random();
+    let skew = Math.pow(rand, 1-power/100);
+    velocity = skew * 3.4;
+
+    rand = Math.random();
+    skew = Math.pow(rand, timing/ 100)* 0.5;
+    velocity = velocity - skew;
+
+    rand = Math.random();
+    skew = Math.pow(rand, 1-accuracy/100)*0.5;
+    velocity = velocity - skew;
+
+    velocity = velocity >= 0.5 ? velocity : 0.5;
+
 
     const baseAngle = Math.PI / 4; // 45°
     const maxNegDeviation = 25 * Math.PI / 180; // -25
     const maxPosDeviation = 35 * Math.PI / 180; // +35
 
-    let deviation;
-    if (timingPenalty < 0.5) {
-
-        deviation = -Math.random() * maxNegDeviation * (timingPenalty * 2); // from 0 to -25
-    } else {
-
-        deviation = Math.random() * maxPosDeviation * ((timingPenalty - 0.5) * 2); // from 0 to +35
-    }
+    let skill = (control + timing) / 2;
+    rand = Math.random();
+    skew = 2 * (rand - 0.5); // -1 to +1
+    let deviationFactor = (100 - skill) / 100;
+    
+    let deviation = skew * (skew < 0 ? maxNegDeviation : maxPosDeviation) * deviationFactor;
+    
 
     let VAngle = 0.00001;
-    if(batsman.bat_style = 'aggressive'){
-        Math.random() <= 0.334 ? VAngle = baseAngle + deviation : VAngle = 0.000001;    
+    let prob = 0;
+
+    console.log(batsman, bowler, score);
+    if(batsman.balls_f >= 10){
+        prob += 0.5
+    }
+    if(batsman.bat_style === 'aggressive'){
+        prob += 1.6  
     }
     else if(batsman.bat_style = 'balanced'){
-        Math.random() <= 0.1667 ? VAngle = baseAngle + deviation : VAngle = 0.000001;         
+        prob += 0.83       
     }
-    else if(batsman.bat_style = 'balanced'){
-        Math.random() <= 0.0667 ? VAngle = baseAngle + deviation : VAngle = 0.000001;       
+    else if(batsman.bat_style = 'defensive'){
+        prob += 0.45      
+    }
+
+    if(ballsSinceLastWicket < 6){
+        prob -= 0.4;
     }
 
 
-/* 
-    // edge cases
-    const clampedVAngle = Math.max(5 * Math.PI / 180, Math.min(VAngle, 80 * Math.PI / 180)); */
+    if(!score.isFirstInning){
+        const reqRunRate = (score.target - score.totalruns)/((120 - score.totalBalls)/6);
+        if(reqRunRate >= 12){
+            prob += (reqRunRate / 6) - 1.5;
+        }
+    }
+
+    const oversLeft = (120 - score.balls)/6;
+    if(oversLeft > 5 ){
+        prob += 0;
+    }
+    else if(oversLeft > 2 && oversLeft < 5){
+        prob += 1.5;
+    }
+    else{
+        prob += 3.5;
+    }
+
+    prob = prob/10;
+    console.log(prob);
+
+    if(Math.random() < (prob/10)){
+        VAngle = baseAngle - deviation
+    }
+    else{
+        VAngle = 0.00001;
+    }
 
 
-    setBallCalc({ velocity: velocity, VAngle: VAngle });
 
+    const r = Math.floor(Math.random()* gaps.length);
+    const HAngle = gaps[r]?.center;
 
+    setBallCalc({ velocity: velocity, VAngle: VAngle, HAngle: HAngle });
 
 }
