@@ -6,17 +6,12 @@ select * from league_table;
 select * from schedule;
 select * from teams;
 
-select * from players where power is not null or timing is not null or control is not null or speed is not null or accuracy is not null;
-
-update players set power = 75, timing = 60, control = 55, bat_rating = 63, speed = 91, accuracy = 90, bowl_rating = 91  where player_id = 18;
-update players set power = 38, timing = 40, control = 39, bat_rating = 39, speed = 87, accuracy = 94, bowl_rating = 91  where player_id = 32;
-
-
-
 
 SELECT p.player_id, p.player_name, p.type, p.team_id, ps.mvp_points
 FROM player_stat ps JOIN  players p ON ps.player_id = p.player_id JOIN teams t ON p.team_id = t.team_id 
 WHERE ps.s_season = (SELECT MAX(s_season) FROM player_stat) and p.team_id = 2 ORDER BY ps.mvp_points DESC;
+
+
 
 
 
@@ -37,7 +32,8 @@ insert into league_table ( team_id, wins, losses, draws, matches, season, runs_s
 
 create table teams(
 	team_id int primary key auto_increment, 
-	team_name varchar(50)
+	team_name varchar(50),
+    trohpies int
 );
 
 
@@ -139,18 +135,60 @@ create table league_table(
     ),
     foreign key (team_id) references teams(team_id)
 );
-
-
-
+select * from league_table;
+select * from schedule;
+update schedule set isPlayed = 0 where match_id = 90;
 create table schedule(
 	match_id int primary key auto_increment,
 	team1_id int,
 	team2_id int,
 	isPlayed int default 0,
+    winner_id int,
     season int,
+    match_type ENUM('League', 'Qualifier1', 'Eliminator', 'Qualifier2', 'Final') DEFAULT 'League',
 	foreign key(team1_id) references teams(team_id),
-	foreign key(team2_id) references teams(team_id)
+	foreign key(team2_id) references teams(team_id),
+    foreign key(winner_id) references teams(team_id)
 );
+
+drop procedure insert_playoffs_if_ready;
+
+DELIMITER $$
+
+CREATE PROCEDURE insert_playoffs_if_ready(IN in_season int)
+BEGIN
+    DECLARE total_league_matches INT;
+    DECLARE completed_league_matches INT;
+    DECLARE team1 INT;
+    DECLARE team2 INT;
+    DECLARE team3 INT;
+    DECLARE team4 INT;
+
+    SELECT COUNT(*) INTO total_league_matches
+    FROM schedule
+    WHERE season = in_season AND match_type = 'League';
+    
+    SELECT COUNT(*) INTO completed_league_matches
+    FROM schedule
+    WHERE season = in_season AND match_type = 'League' AND isPlayed = 1;
+
+    IF total_league_matches = completed_league_matches THEN
+        SELECT team_id INTO team1 FROM league_table WHERE season = in_season ORDER BY points DESC, nrr DESC LIMIT 1 OFFSET 0;
+        SELECT team_id INTO team2 FROM league_table WHERE season = in_season ORDER BY points DESC, nrr DESC LIMIT 1 OFFSET 1;
+        SELECT team_id INTO team3 FROM league_table WHERE season = in_season ORDER BY points DESC, nrr DESC LIMIT 1 OFFSET 2;
+        SELECT team_id INTO team4 FROM league_table WHERE season = in_season ORDER BY points DESC, nrr DESC LIMIT 1 OFFSET 3;
+
+        INSERT INTO schedule (season, team1_id, team2_id, match_type)
+        VALUES (in_season, team1, team2, 'Qualifier1');
+
+        INSERT INTO schedule (season, team1_id, team2_id, match_type)
+        VALUES (in_season, team3, team4, 'Eliminator');
+    END IF;
+END $$
+
+DELIMITER ;
+
+
 
 select * from fields join field_points on fields.point_no = field_points.point_no where field_no = 1;
 
@@ -172,9 +210,6 @@ insert into field_points values (1,490,675),(25,560,635),(2,615,580),(26,660,520
                                 (13,435,515),(35,465,480),(14,485,440),(36,490,405),(15,490,370),(37,490,340),(16,490,310),(38,480,280),(17,470,255),(39,450,230),(18,420,210),
                                 (24,320,210),(44,290,230),(23,270,255),(43,260,280),(22,250,310),(42,250,340),(21,250,370),(41,250,405),(20,255,440),(40,270,480),(19,305,515);
 select * from field_points;
- 
-insert into fields values (1,),(1,),(1,),(1,),(1,),(1,),(1,),(1,),(1,);
-insert into fields values (2,),(2,),(2,),(2,),(2,),(2,),(2,),(2,),(2,);
 
 insert into teams (team_name) values ('Chennai Superkings'),('Rajasthan Royals'),('Mumbai Indians'),('Punjab Kings'),('Sunrisers Hydrabad'),('Kolkata Knight Riders'),('Delhi Captials'),('Lucknow Super Giants'),('Gujarat Titans'),('Royal Challengers Bengaluru');
 

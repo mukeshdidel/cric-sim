@@ -52,7 +52,9 @@ export default function Match(){
                 team1Id: newTeams[0].team1_id, 
                 team2Id: newTeams[0].team2_id, 
                 matchId: newTeams[0].match_id,
-                season: newTeams[0].season});
+                season: newTeams[0].season,
+                match_type: newTeams[0].match_type
+            });
             
             let [team1Players, team2Players] = await getTeamPlayers(newTeams[0].team1_id, newTeams[0].team2_id,newTeams[0].season);
 

@@ -24,6 +24,7 @@ export default function Table(){
 
             /* console.log(teams); */  // Teams fetched from server are logged to console for debugging.
             setTable(teams);
+            console.log(teams);
         }
         getTable();
     },[])
@@ -71,7 +72,7 @@ export default function Table(){
                     <tbody className='table-body'>
                         {table.map(team => (
                             <tr key={team.team_id}>
-                                <td>{team.team_name}</td>
+                                <td>{team.team_name} {team.isChampion === 1 ? "🏆" : ""} </td>
                                 <td>{team.matches}</td>
                                 <td>{team.wins}</td>
                                 <td>{team.losses}</td>
