@@ -19,7 +19,7 @@ async function getSeasons(){
 }
 async function getTable(season){
     try {
-        const [teams] = await pool.query(`select team_id, team_name, matches, wins, losses, draws, points, nrr from teams natural join league_table where season = ? 
+        const [teams] = await pool.query(`select team_id, team_name, matches, wins, losses, draws, points, nrr, isChampion from teams natural join league_table where season = ? 
         order by points desc, nrr desc ;`,[season]);
         return teams;
     } catch (error) {
@@ -50,14 +50,6 @@ async function getTeams(){
     }
 }
 
-async function truncateSchedule(){
-    try {
-        await pool.query('TRUNCATE TABLE schedule;');
-    }
-    catch (error) {
-        console.error(error);
-    }
-}
 async function insertMatches(team1_id, team2_id , season){
     try {
         await pool.query('INSERT INTO schedule (team1_id, team2_id , season) VALUES (?,?,?)', [team1_id, team2_id,season]);
@@ -112,7 +104,8 @@ async function exportMatch(match_id){
                                                 s.team1_id, 
                                                 t1.team_name AS team1_name, 
                                                 s.team2_id, 
-                                                t2.team_name AS team2_name
+                                                t2.team_name AS team2_name,
+                                                s.match_type
                                             FROM schedule s
                                             JOIN teams t1 ON s.team1_id = t1.team_id
                                             JOIN teams t2 ON s.team2_id = t2.team_id
@@ -134,13 +127,40 @@ async function getMatchPlayers(team_id){
     }
 }
 
-async function updateSchedule(match_id){
+async function updateSchedule(winningTeamId,match_id){
     try{
-        const [rows] = await pool.query(`update schedule set isPlayed = 1 where match_id = ?`,[match_id]);
+        const [rows] = await pool.query(`update schedule set isPlayed = 1, winner_id = ? where match_id = ?`,[winningTeamId, match_id]);
         return rows;
     }
     catch (error){
         console.error(error);
+    }
+}
+
+async function updatePlayOffMatch(teams, winningTeamId){
+    try{
+        await pool.query(`update schedule set isPlayed = 1, winner_id = ? where match_id = ?`,[winningTeamId, teams.matchId])
+        
+        if(teams.match_type === 'Qualifier1'){
+            const loosingTeamId = teams.team1Id === winningTeamId ? teams.team2Id : teams.team1Id;
+            await pool.query(`INSERT INTO schedule (season, team1_id, match_type)
+                VALUES (? ,?, 'Qualifier2');`,[teams.season, loosingTeamId])
+            await pool.query(`INSERT INTO schedule (season, team1_id, match_type)
+                VALUES (? ,?, 'Final');`,[teams.season,winningTeamId])
+        }
+        else if(teams.match_type === 'Eliminator'){
+            await pool.query(`update schedule set team2_id = ? where season = ? and match_type = 'Qualifier2'`,[winningTeamId, teams.season])
+        }
+        else if(teams.match_type === 'Qualifier2'){
+            await pool.query(`update schedule set team2_id = ? where season = ? and match_type = 'Final'`,[winningTeamId, teams.season])
+        }
+        else if(teams.match_type === 'Final'){
+            await pool.query(`update league_table set isChampion = 1 where team_id = ? and season = ?`,[winningTeamId, teams.season])
+        }
+    }
+    catch(error)
+    {
+        console.log(error)
     }
 }
 
@@ -238,4 +258,18 @@ async function getFields(){
         console.log(error);
     }
 }
-export {getTable,getPlayerStats,getTeams,insertMatches,exportMatches,truncateSchedule,exportMatch,getMatchPlayers,updateLeaueTable,updateSchedule,getSeasons,updatePlayerStats,insertLeague,getPlayers, draftPlayer, getPlayersByTeam, getFields};
+
+
+async function checkAndINsertPlayOff(season){
+    try{
+        await pool.query(`call insert_playoffs_if_ready(?)`,[season])
+    }
+    catch(error)
+    {
+        console.log(error)
+    }
+}
+
+
+
+export {getTable,getPlayerStats,getTeams,insertMatches,exportMatches,exportMatch,getMatchPlayers,updateLeaueTable,updateSchedule,getSeasons,updatePlayerStats,insertLeague,getPlayers, draftPlayer, getPlayersByTeam, getFields, checkAndINsertPlayOff, updatePlayOffMatch};

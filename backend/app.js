@@ -1,7 +1,7 @@
 
 import express from 'express';
 import cors from 'cors'
-import {getSeasons,getTable,getPlayerStats,getTeams,insertMatches,exportMatches,truncateSchedule,exportMatch,getMatchPlayers,updateLeaueTable,updateSchedule,updatePlayerStats,insertLeague,  getPlayers, draftPlayer, getPlayersByTeam, getFields} from './database.js'
+import {getSeasons,getTable,getPlayerStats,getTeams,insertMatches,exportMatches,exportMatch,getMatchPlayers,updateLeaueTable,updateSchedule,updatePlayerStats,insertLeague,  getPlayers, draftPlayer, getPlayersByTeam, getFields, checkAndINsertPlayOff, updatePlayOffMatch} from './database.js'
 
 const app = express();
 
@@ -61,7 +61,6 @@ app.get('/teams',async function (req,res){
 app.post('/matches',async function (req,res){
     try{
         const insertschedule  = req.body
-        await truncateSchedule();
         const seasons = await getSeasons();
         const latestSeason = seasons[0].season + 1;
         await insertLeague(latestSeason);
@@ -124,28 +123,35 @@ app.post('/result',async function (req,res){
         const data = req.body
         const {team1Players, team2Players, score,winningTeamId, teams} = data;
 
-
-/*         console.log(team1Players)
+/* 
+        console.log(team1Players)
         console.log(team2Players)
         console.log(score)
         console.log(winningTeamId)
         console.log(teams) */
 
-        await updateSchedule(teams.matchId) // updates match to 'played' state  
-
-
-
-        if(teams.team1Id === winningTeamId){
-            await updateLeaueTable(teams.team1Id,1,0,0,teams.season,score.team1TotalRuns,score.team1TotalBalls,score.totalRuns,score.totalBalls)
-            await updateLeaueTable(teams.team2Id,0,1,0,teams.season,score.totalRuns,score.totalBalls,score.team1TotalRuns,score.team1TotalBalls) 
-        }
-        else if(teams.team2Id === winningTeamId){
-            await updateLeaueTable(teams.team1Id,0,1,0,teams.season,score.team1TotalRuns,score.team1TotalBalls,score.totalRuns,score.totalBalls)
-            await updateLeaueTable(teams.team2Id,1,0,0,teams.season,score.totalRuns,score.totalBalls,score.team1TotalRuns,score.team1TotalBalls)
+        if(teams.match_type === 'League'){
+            await updateSchedule(winningTeamId, teams.matchId) // updates match to 'played' state  
         }
         else{
-            await updateLeaueTable(teams.team1Id,0,0,1,teams.season,score.team1TotalRuns,score.team1TotalBalls,score.totalRuns,score.totalBalls)
-            await updateLeaueTable(teams.team2Id,0,0,1,teams.season,score.totalRuns,score.totalBalls,score.team1TotalRuns,score.team1TotalBalls)
+            await updatePlayOffMatch(teams, winningTeamId);
+        }
+
+
+        if(teams.match_type === 'League') {
+
+            if(teams.team1Id === winningTeamId){
+                await updateLeaueTable(teams.team1Id,1,0,0,teams.season,score.team1TotalRuns,score.team1TotalBalls,score.totalRuns,score.totalBalls)
+                await updateLeaueTable(teams.team2Id,0,1,0,teams.season,score.totalRuns,score.totalBalls,score.team1TotalRuns,score.team1TotalBalls) 
+            }
+            else if(teams.team2Id === winningTeamId){
+                await updateLeaueTable(teams.team1Id,0,1,0,teams.season,score.team1TotalRuns,score.team1TotalBalls,score.totalRuns,score.totalBalls)
+                await updateLeaueTable(teams.team2Id,1,0,0,teams.season,score.totalRuns,score.totalBalls,score.team1TotalRuns,score.team1TotalBalls)
+            }
+            else{
+                await updateLeaueTable(teams.team1Id,0,0,1,teams.season,score.team1TotalRuns,score.team1TotalBalls,score.totalRuns,score.totalBalls)
+                await updateLeaueTable(teams.team2Id,0,0,1,teams.season,score.totalRuns,score.totalBalls,score.team1TotalRuns,score.team1TotalBalls)
+            }
         }
 
         for (let player of team1Players) {
@@ -165,7 +171,11 @@ app.post('/result',async function (req,res){
             ); 
         }
 
-        res.status(200).json({ message: 'Match result processed successfully' });
+        if(teams.match_type === 'League'){
+            await checkAndINsertPlayOff(teams.season)
+        }
+
+        res.status(200).json({ message: 'Match result processed successfully'});
     }
     catch (error){
         console.error(error);
