@@ -210,13 +210,12 @@ app.post('/draft', async function(req, res){
     }    
 })
 
-app.get('/teams-info/:id', async (req, res) => {
+app.post('/teams-info/:id', async (req, res) => {
     
     try{
         const team_id = req.params.id;
-
-        
-        const players = await getPlayersByTeam(team_id);
+        const season = req.body;
+        const players = await getPlayersByTeam(team_id, season.season);
     
         res.json(players);
     }

@@ -22,8 +22,6 @@ export default function Stats(){
             });
             
             const stats = await response.json();
-            
-            /* console.log(stats); */  // Teams fetched from server are logged to console for debugging.
             setStats(stats);
         }
         getPlayerStats();

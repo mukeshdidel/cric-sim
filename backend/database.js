@@ -236,11 +236,11 @@ async function draftPlayer(player_id, team_id){
     }
 }
 
-async function getPlayersByTeam(team_id) {
+async function getPlayersByTeam(team_id, season) {
     try{
-        const [rows] = await pool.query(`SELECT p.player_id, p.player_name, p.type, p.team_id, ps.mvp_points
+        const [rows] = await pool.query(`SELECT p.player_id, p.player_name, p.type, p.team_id, ps.mvp_points, ps.runs, ps.balls_f, ps.sixes, ps.fours, ps.wickets, ps.balls_b, ps.runs_c
                                         FROM player_stat ps JOIN  players p ON ps.player_id = p.player_id JOIN teams t ON p.team_id = t.team_id 
-                                        WHERE ps.s_season = (SELECT MAX(s_season) FROM player_stat) and p.team_id = ? ORDER BY ps.mvp_points DESC;`,[team_id]);
+                                        WHERE ps.s_season = ? and p.team_id = ? ORDER BY ps.mvp_points DESC;`,[season, team_id]);
         return rows;     
     }
     catch(error){

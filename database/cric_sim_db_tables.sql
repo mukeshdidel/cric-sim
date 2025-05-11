@@ -1,10 +1,13 @@
 CREATE DATABASE  cric_sim_db;
 use cric_sim_db;
-
+select * from players;
 select * from player_stat;
 select * from league_table;
 select * from schedule;
 select * from teams;
+ 
+
+
 
 
 SELECT p.player_id, p.player_name, p.type, p.team_id, ps.mvp_points
@@ -12,7 +15,7 @@ FROM player_stat ps JOIN  players p ON ps.player_id = p.player_id JOIN teams t O
 WHERE ps.s_season = (SELECT MAX(s_season) FROM player_stat) and p.team_id = 2 ORDER BY ps.mvp_points DESC;
 
 
-
+select * from player_stat;
 
 
 
@@ -135,9 +138,7 @@ create table league_table(
     ),
     foreign key (team_id) references teams(team_id)
 );
-select * from league_table;
-select * from schedule;
-update schedule set isPlayed = 0 where match_id = 90;
+
 create table schedule(
 	match_id int primary key auto_increment,
 	team1_id int,
