@@ -185,7 +185,6 @@ const waitFor = async (conditionFn, checkInterval = 50) => {
                     balls_f: battingTeam[s].balls_f + 1,
                     batStatus: 3 
                 };
-                
                 bowlingTeam[b]= {
                     ...bowlingTeam[b],
                     balls_b: bowlingTeam[b].balls_b + 1,

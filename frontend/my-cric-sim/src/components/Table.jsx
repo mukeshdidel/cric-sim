@@ -60,6 +60,7 @@ export default function Table(){
                 <table>
                     <thead className='table-head'>
                         <tr>
+                            <th>pos</th>
                             <th>Team</th>
                             <th>Matches</th>
                             <th>Wins</th>
@@ -70,8 +71,10 @@ export default function Table(){
                         </tr>
                     </thead>
                     <tbody className='table-body'>
-                        {table.map(team => (
-                            <tr key={team.team_id}>
+                        {table.map((team, index) => (
+                            <>
+                            <tr key={index}>
+                                <td>{index+1}</td>
                                 <td>{team.team_name} {team.isChampion === 1 ? "🏆" : ""} </td>
                                 <td>{team.matches}</td>
                                 <td>{team.wins}</td>
@@ -80,6 +83,7 @@ export default function Table(){
                                 <td>{team.points}</td>
                                 <td>{team.nrr}</td>
                             </tr>
+                            </>
                         ))}
                     </tbody>
                 </table>

@@ -57,7 +57,7 @@ export default function Draft(){
 
                 players.forEach(player => {
                     for(let i = 0; i< teams.length; i++ ){
-                        if(player.team_id === teams[i].team_id && teams[i].playerCount < 3 ){
+                        if(player.team_id === teams[i].team_id && teams[i].playerCount < 5 ){
 
 
                             if(player.type === 'allrounder' && teams[i].allrounderCount !=1 ) {
@@ -66,13 +66,13 @@ export default function Draft(){
                                 player.isSold =  true;
                                 teams[i].draft_points += Number(player.mvp_points); 
                             }
-                            if(player.type === 'bowler') {
+                            if(player.type === 'bowler' && teams[i].bowlerCount != 4) {
                                 teams[i].playerCount++;
                                 teams[i].bowlerCount++;
                                 player.isSold =  true;
                                 teams[i].draft_points +=Number(player.mvp_points);
                             }
-                            if(player.type === 'batsman'){
+                            if(player.type === 'batsman' && teams[i].batsmanCount != 6){
                                 teams[i].playerCount++;
                                 teams[i].batsmanCount++;
                                 player.isSold =  true;

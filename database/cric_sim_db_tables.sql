@@ -7,19 +7,9 @@ select * from schedule;
 select * from teams;
  
 
-
-
-
-SELECT p.player_id, p.player_name, p.type, p.team_id, ps.mvp_points
-FROM player_stat ps JOIN  players p ON ps.player_id = p.player_id JOIN teams t ON p.team_id = t.team_id 
-WHERE ps.s_season = (SELECT MAX(s_season) FROM player_stat) and p.team_id = 2 ORDER BY ps.mvp_points DESC;
-
-
-select * from player_stat;
-
-
-
-select * from players where team_id = ? order by bat_posi, bat_rating desc;
+SELECT p.player_id, p.player_name, p.type, ps.team_id, ps.mvp_points, ps.runs, ps.balls_f, ps.sixes, ps.fours, ps.wickets, ps.balls_b, ps.runs_c
+                                        FROM player_stat ps JOIN  players p ON ps.player_id = p.player_id JOIN teams t ON ps.team_id = t.team_id 
+                                        WHERE ps.s_season = 2 and ps.team_id = 2 ORDER BY ps.mvp_points DESC;
 
 insert into league_table ( team_id, wins, losses, draws, matches, season, runs_s, balls_f, runs_c , balls_b) values (1,0,0,0,0,0,0,0,0,0),
 																													(2,0,0,0,0,0,0,0,0,0),
