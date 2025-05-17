@@ -24,7 +24,6 @@ export default function Team(){
                 });
                 const data = await response.json();
 
-                console.log(data);
                 setPlayers(data);
 
 

@@ -17,13 +17,12 @@ function isOutOfBounds(x, y) {
 }
 
 
-function intercept(player, ball, ballVel,ivZ, playerSpeed) {
+function intercept(player, ball, ballVel,ivZ, playerSpeed, matchSpeedRef) {
     const dx = ball.x - player.x;
     const dy = ball.y - player.y;
     const vx = ballVel.x;
     const vy = ballVel.y;
     const vz = ivZ || 0;
-    const z = ball.z || 0;
 
     
 
@@ -51,7 +50,7 @@ function intercept(player, ball, ballVel,ivZ, playerSpeed) {
 
     let landingPoint = null;
     if (vz.current > 0) {
-        const g = 0.0132;
+        const g = 0.0132*matchSpeedRef.current*matchSpeedRef.current;
         const a = -0.5 * g;
         const b = vz.current;
         const c = ball.z; // current z-position of the ball
@@ -107,7 +106,7 @@ function intercept(player, ball, ballVel,ivZ, playerSpeed) {
 
 export default function Ground(){
 
-    const { isAnimationDone, ballEvent, ballCalc, fields, fieldIndex } = useContext(matchContext);
+    const { isAnimationDone, ballEvent, ballCalc, fields, fieldIndex, matchSpeedRef } = useContext(matchContext);
     
     const field = fields?.[fieldIndex];
     const [fielders, setFielders] = useState(() => {
@@ -182,12 +181,12 @@ export default function Ground(){
 
       useEffect(()=>{
 
-        const velo = ballCalc?.velocity;
+        const velo = ballCalc?.velocity*matchSpeedRef.current;
         const HAngle = ballCalc?.HAngle;
         const VAngle = ballCalc?.VAngle;  
 
-        const vx = Math.cos(VAngle)*Math.cos(HAngle)*velo;
-        const vy = Math.cos(VAngle)*Math.sin(HAngle)*velo;
+        const vx = Math.cos(VAngle)*Math.cos(HAngle)*velo
+        const vy = Math.cos(VAngle)*Math.sin(HAngle)*velo
         const vz = Math.sin(VAngle)*velo
 
         startTime.current = performance.now()
@@ -203,7 +202,7 @@ export default function Ground(){
                 setFielders(prev =>
                     prev.map(f => {
                         if (!f.isSpecial) {
-                            const { direction, target, landingPoint } = intercept(f, ball, velocityRef.current, initialVelocityZRef, 0.6);
+                            const { direction, target, landingPoint } = intercept(f, ball, velocityRef.current, initialVelocityZRef, 0.6*matchSpeedRef.current, matchSpeedRef);
                             if(target){
                                 Tpoint.current = {x: target.x, y: target.y};
                             }
@@ -213,8 +212,8 @@ export default function Ground(){
 
                             return {
                                 ...f,
-                                vx: direction.x*0.3,
-                                vy: direction.y*0.3,
+                                vx: direction.x*0.3*matchSpeedRef.current,
+                                vy: direction.y*0.3*matchSpeedRef.current,
                                 tpx: target.x,
                                 tpy: target.y,
                             };
@@ -261,7 +260,7 @@ export default function Ground(){
 
             if(ball.z > 0){
                 const v = velocityRef.current;
-                velocityRef.current = {...v, z: v.z - g}
+                velocityRef.current = {...v, z: v.z - g*(matchSpeedRef.current**2)}
             }
             animationRef.current = requestAnimationFrame(animateBall);
         };
@@ -281,7 +280,7 @@ export default function Ground(){
                     cancelAnimationFrame(animationRef.current)
                     
                     const endTime = performance.now();
-                    const time = (endTime - startTime.current)/1000;
+                    const time = ((endTime - startTime.current)/1000)*matchSpeedRef.current;
 
                     if(time < 1){
                         ballEvent.current = 0;

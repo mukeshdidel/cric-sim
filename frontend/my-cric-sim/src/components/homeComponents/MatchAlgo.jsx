@@ -234,7 +234,7 @@ const waitFor = async (conditionFn, checkInterval = 50) => {
                 bowler: bowlingTeam[b],
             }
             setScore(newScore); 
-            await sleep();
+            /* await sleep(); */
         }
 
     }

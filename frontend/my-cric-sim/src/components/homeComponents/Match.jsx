@@ -34,8 +34,10 @@ export default function Match(){
 
     const isAnimationDone = useRef(false);
 
-    const [matchSpeed, setMatchSpeed] = useState(0);
+    const [matchSpeed, setMatchSpeed] = useState(5);
+
     const matchSpeedRef = useRef(matchSpeed);
+    
     useEffect(() => {
         matchSpeedRef.current = matchSpeed;
     }, [matchSpeed]); // Updates ref when matchSpeed changes
@@ -187,8 +189,8 @@ export default function Match(){
     const handleSpeedChange = (e) => {
         let value = Number(e.target.value);
 
-        if (value < 0) value = 0;
-        if (value > 100) value = 100;
+        if (value < 1) value = 1;
+        if (value > 5) value = 5;
         setMatchSpeed(value);
 
       };
@@ -220,7 +222,7 @@ export default function Match(){
                     </div>
                     
                     <h3>Scorecard</h3>
-                    <matchContext.Provider value={{team1Players, team2Players, matchSpeedRef, score, isAnimationDone, ballEvent, ballCalc, fields , fieldIndex}}>
+                    <matchContext.Provider value={{team1Players, team2Players, matchSpeedRef, score, isAnimationDone, ballEvent, ballCalc, fields , fieldIndex, matchSpeedRef}}>
                         <Score />  
                         <div className='match-scorecard'>
                        {ballData && <Ground key={ballData} />}
